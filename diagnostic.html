@@ -33,83 +33,99 @@ async function runChecks(){
   // 1. HTTPS check
   row('Served over HTTPS', location.protocol === 'https:', location.protocol);
 
-  // 2. Manifest link present in HTML
-  const manifestLink = document.querySelector('link[rel="manifest"]');
-  row('Manifest <link> tag found on this page', !!manifestLink, manifestLink ? manifestLink.href : 'no <link rel="manifest"> in document head');
+  // Fetch the REAL index.html fresh (no cache) and inspect its actual head.
+  // Everything below checks this fetched text, not this diagnostic page's own DOM.
+  const indexUrl = new URL('./index.html', location.href).href;
+  let indexHtml = null;
+  let manifestHrefRaw = null;
 
-  // 3. Manifest actually fetchable
-  if(manifestLink){
-    try{
-      const resp = await fetch(manifestLink.href);
+  try {
+    const resp = await fetch(indexUrl, {cache: 'no-store'});
+    indexHtml = await resp.text();
+    row('index.html fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${indexUrl}`);
+  } catch(e) {
+    row('index.html fetch status', false, 'Fetch threw: ' + e.message);
+  }
+
+  if (indexHtml) {
+    const manifestMatch = indexHtml.match(/<link[^>]+rel=["']manifest["'][^>]*>/i);
+    if (manifestMatch) {
+      const hrefMatch = manifestMatch[0].match(/href=["']([^"']+)["']/i);
+      manifestHrefRaw = hrefMatch ? hrefMatch[1] : null;
+      row('Manifest &lt;link&gt; tag found in index.html', true, manifestMatch[0]);
+    } else {
+      row('Manifest &lt;link&gt; tag found in index.html', false, 'No <link rel="manifest"> found anywhere in the fetched index.html');
+    }
+  }
+
+  // Manifest fetchable + valid JSON
+  let manifestJson = null;
+  if (manifestHrefRaw) {
+    const manifestUrl = new URL(manifestHrefRaw, indexUrl).href;
+    try {
+      const resp = await fetch(manifestUrl, {cache: 'no-store'});
       const text = await resp.text();
-      let parsed = null;
-      let parseErr = null;
-      try{ parsed = JSON.parse(text); }catch(e){ parseErr = e.message; }
-      row('Manifest file fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${manifestLink.href}`);
-      if(resp.ok){
-        row('Manifest is valid JSON', !parseErr, parseErr || JSON.stringify(parsed, null, 2));
+      row('Manifest file fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${manifestUrl}`);
+      if (resp.ok) {
+        try {
+          manifestJson = JSON.parse(text);
+          row('Manifest is valid JSON', true, JSON.stringify(manifestJson, null, 2));
+        } catch(e) {
+          row('Manifest is valid JSON', false, 'Parse error: ' + e.message + '\n\nRaw content:\n' + text);
+        }
       }
-    }catch(e){
+    } catch(e) {
       row('Manifest file fetch status', false, 'Fetch threw: ' + e.message);
     }
   }
 
-  // 4. Service worker support + registration
-  if('serviceWorker' in navigator){
-    try{
+  // Service worker registration (this part IS legitimately about the current
+  // browser session, since SW registration is a browser-level API, not page content)
+  if ('serviceWorker' in navigator) {
+    try {
       const reg = await navigator.serviceWorker.getRegistration();
-      if(reg){
+      if (reg) {
         row('Service worker registered', true, 'scope: ' + reg.scope + ' | active state: ' + (reg.active ? reg.active.state : 'none'));
       } else {
-        row('Service worker registered', false, 'navigator.serviceWorker.getRegistration() returned nothing for this page');
+        row('Service worker registered', false, 'No registration found for this origin/scope');
       }
-    }catch(e){
+    } catch(e) {
       row('Service worker registered', false, 'Error checking registration: ' + e.message);
     }
 
-    // try registering fresh right now and capture any error
-    try{
-      const swUrl = new URL('./service-worker.js', location.href).href;
-      const resp = await fetch(swUrl);
+    try {
+      const swUrl = new URL('./service-worker.js', indexUrl).href;
+      const resp = await fetch(swUrl, {cache: 'no-store'});
       row('service-worker.js file fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${swUrl}`);
-    }catch(e){
+    } catch(e) {
       row('service-worker.js file fetch status', false, 'Fetch threw: ' + e.message);
     }
   } else {
     row('Service worker support', false, 'navigator.serviceWorker not available in this browser context');
   }
 
-  // 5. Icons fetchable
-  if(manifestLink){
-    try{
-      const resp = await fetch(manifestLink.href);
-      const manifest = await resp.json();
-      for(const icon of (manifest.icons || [])){
-        const iconUrl = new URL(icon.src, manifestLink.href).href;
-        try{
-          const iresp = await fetch(iconUrl);
-          row(`Icon fetch: ${icon.src} (${icon.sizes})`, iresp.ok, `HTTP ${iresp.status} — ${iconUrl}`);
-        }catch(e){
-          row(`Icon fetch: ${icon.src}`, false, 'Fetch threw: ' + e.message);
-        }
+  // Icons fetchable, per manifest
+  if (manifestJson && Array.isArray(manifestJson.icons)) {
+    const manifestUrl = new URL(manifestHrefRaw, indexUrl).href;
+    for (const icon of manifestJson.icons) {
+      const iconUrl = new URL(icon.src, manifestUrl).href;
+      try {
+        const iresp = await fetch(iconUrl, {cache: 'no-store'});
+        row(`Icon fetch: ${icon.src} (${icon.sizes}, ${icon.purpose||'any'})`, iresp.ok, `HTTP ${iresp.status} — ${iconUrl}`);
+      } catch(e) {
+        row(`Icon fetch: ${icon.src}`, false, 'Fetch threw: ' + e.message);
       }
-    }catch(e){
-      row('Icon checks', false, 'Could not parse manifest to check icons: ' + e.message);
     }
   }
 
-  // 6. beforeinstallprompt capture
+  // beforeinstallprompt — genuinely page/session-specific, stays as-is
   row('beforeinstallprompt fired this session', window.__bipFired === true, window.__bipFired ? 'Chrome offered to install' : 'Event has not fired yet on this page load (may still fire later, or criteria not yet met)');
 
-  // 7. Raw head HTML dump - shows exactly what's actually live
-  try {
-    const resp = await fetch(location.href, {cache: 'no-store'});
-    const html = await resp.text();
-    const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+  // Raw head dump of the REAL index.html, for full visibility
+  if (indexHtml) {
+    const headMatch = indexHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
     const headContent = headMatch ? headMatch[1] : 'Could not find <head> in fetched HTML';
-    rows.push(`<div class="row"><div class="label">Raw &lt;head&gt; HTML actually served right now (no-cache fetch)</div><pre>${headContent.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></div>`);
-  } catch(e) {
-    rows.push(`<div class="row"><div class="label">Raw head fetch</div><span class="bad">✗ FAIL</span><pre>${e.message}</pre></div>`);
+    rows.push(`<div class="row"><div class="label">Raw &lt;head&gt; of ${indexUrl} (no-cache fetch, ground truth)</div><pre>${headContent.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></div>`);
   }
 
   results.innerHTML = rows.join('');

@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Next Move</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#0A0A0F" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="icon" href="./icon-192.png" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<style>
+  :root{
+    --bg:#0A0A0F;
+    --bg-elevated:#13131A;
+    --card:rgba(26,26,36,0.7);
+    --card-solid:#1A1A24;
+    --border-subtle:rgba(255,255,255,0.07);
+    --text-primary:#F5F5F7;
+    --text-secondary:#A1A1AE;
+    --text-tertiary:#6E6E7C;
+    --accent:#7C5CFF;
+    --accent-soft:#9D85FF;
+    --accent-dim:#5B3FD9;
+    --dead:#FF5C7A;
+    --okay:#FFC857;
+    --locked:#3DDC84;
+    --skill:#5FD9D9;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--text-primary);
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;
+    height:100%; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{
+    position:fixed; inset:0;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(124,92,255,0.10), transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(61,220,132,0.05), transparent 50%),
+      linear-gradient(180deg, #0A0A0F 0%, #0E0E14 50%, #0A0A0F 100%);
+    display:flex; flex-direction:column;
+    max-width:560px; margin:0 auto;
+    overflow:hidden;
+  }
+  .screen{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:24px 20px 140px;
+    display:none;
+    scrollbar-width:none;
+  }
+  .screen::-webkit-scrollbar{display:none;}
+  .screen.active{display:block; animation:fadeIn .35s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  h1.title{font-size:30px; font-weight:800; margin:0 0 4px; letter-spacing:-0.5px;}
+  .subtitle{color:var(--text-secondary); font-size:16px; margin:0 0 20px; line-height:1.4;}
+  .section-label{color:var(--text-secondary); font-size:15px; margin:28px 0 14px; font-weight:500;}
+  .section-label:first-of-type{margin-top:0;}
+
+  /* ---------- Card ---------- */
+  .card{
+    background:var(--card);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--border-subtle);
+    border-radius:26px;
+    padding:18px;
+  }
+  .card.glow{
+    box-shadow:0 8px 32px rgba(124,92,255,0.22);
+    border-color:rgba(124,92,255,0.25);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    border:none; cursor:pointer; font-family:inherit;
+    border-radius:22px; padding:17px 24px;
+    font-size:16px; font-weight:700;
+    width:100%; transition:transform .15s ease, opacity .2s ease;
+    -webkit-user-select:none; user-select:none;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{
+    background:linear-gradient(135deg,#9D85FF,#7C5CFF);
+    color:#fff;
+    box-shadow:0 6px 20px rgba(124,92,255,0.35);
+  }
+  .btn-primary:disabled{opacity:0.35; box-shadow:none; cursor:default;}
+  .btn-primary:disabled:active{transform:none;}
+  .btn-ghost{
+    background:rgba(26,26,36,0.7);
+    color:var(--text-primary);
+    border:1px solid var(--border-subtle);
+  }
+
+  /* ---------- Energy selector ---------- */
+  .energy-row{display:flex; gap:12px;}
+  .energy-card{
+    flex:1; border-radius:22px; padding:22px 8px; text-align:center;
+    border:1px solid var(--border-subtle); background:rgba(26,26,36,0.7);
+    cursor:pointer; transition:transform .15s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .energy-card:active{transform:scale(0.97);}
+  .energy-card .emoji{font-size:26px;}
+  .energy-card .label{font-size:13px; font-weight:600; color:var(--text-secondary);}
+  .energy-card.sel-dead{border-color:var(--dead); background:rgba(255,92,122,0.10); box-shadow:0 4px 16px rgba(255,92,122,0.3);}
+  .energy-card.sel-dead .label{color:var(--dead); font-weight:700;}
+  .energy-card.sel-okay{border-color:var(--okay); background:rgba(255,200,87,0.10); box-shadow:0 4px 16px rgba(255,200,87,0.3);}
+  .energy-card.sel-okay .label{color:var(--okay); font-weight:700;}
+  .energy-card.sel-locked{border-color:var(--locked); background:rgba(61,220,132,0.10); box-shadow:0 4px 16px rgba(61,220,132,0.3);}
+  .energy-card.sel-locked .label{color:var(--locked); font-weight:700;}
+
+  /* ---------- Pills ---------- */
+  .pill-row{display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{
+    border-radius:18px; padding:12px 16px; font-size:14px; font-weight:600;
+    border:1px solid var(--border-subtle); background:rgba(26,26,36,0.7);
+    color:var(--text-secondary); cursor:pointer;
+    display:flex; align-items:center; gap:7px;
+    transition:transform .15s ease, border-color .2s, background .2s, color .2s;
+  }
+  .pill:active{transform:scale(0.95);}
+  .pill.selected{
+    border-color:var(--accent); border-width:2px;
+    background:rgba(124,92,255,0.16); color:#D7CCFF; font-weight:700;
+  }
+
+  /* ---------- Streak badge ---------- */
+  .streak-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    border-radius:18px; padding:8px 14px; margin-top:10px;
+    background:rgba(255,200,87,0.12); border:1px solid rgba(255,200,87,0.3);
+    font-size:13px; font-weight:700; color:var(--okay);
+  }
+  .streak-badge.empty{
+    background:rgba(124,92,255,0.12); border:1px solid rgba(124,92,255,0.25); color:var(--accent-soft);
+  }
+
+  /* ---------- Mission card (swipe) ---------- */
+  .mission-wrap{position:relative; border-radius:24px; margin-bottom:14px; overflow:hidden;}
+  .mission-fill-bg{position:absolute; inset:0; background:rgba(61,220,132,0.16);}
+  .mission-fill{height:100%; width:0%; background:rgba(61,220,132,0.35); transition:width .05s linear;}
+  .mission-card{
+    position:relative; background:rgba(26,26,36,0.82); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--border-subtle); border-radius:24px; padding:18px;
+    touch-action:pan-y;
+    will-change:transform;
+  }
+  .mission-card.dragging{transition:none;}
+  .mission-card.snap-back{transition:transform .3s cubic-bezier(.2,.8,.2,1);}
+  .mission-card.completed{background:rgba(61,220,132,0.10); border-color:rgba(61,220,132,0.35);}
+  .mission-tier{font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase;}
+  .mission-tier.main{color:var(--accent-soft);}
+  .mission-tier.skill{color:var(--skill);}
+  .mission-tier.bonus{color:var(--okay);}
+  .mission-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .mission-title{font-size:17px; font-weight:600; color:var(--text-primary);}
+  .mission-title.done{color:rgba(245,245,247,0.5); text-decoration:line-through;}
+  .mission-hint{color:var(--text-tertiary); font-size:12px; margin-top:8px; transition:opacity .15s;}
+  .mission-reduced-note{color:var(--text-tertiary); font-size:12px; margin-top:6px;}
+  .check-circle{
+    width:26px; height:26px; border-radius:13px; background:var(--locked);
+    display:flex; align-items:center; justify-content:center; color:#0A0A0F; font-weight:900; font-size:14px;
+    transform:scale(0); transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .mission-card.completed .check-circle{transform:scale(1);}
+
+  /* ---------- Coach ---------- */
+  .coach-line{margin-bottom:18px; max-width:88%;}
+  .response-row{display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 22px 4px;}
+  .response-pill{
+    border-radius:16px; padding:11px 15px; font-size:13px; font-weight:600;
+    border:1px solid var(--border-subtle); background:rgba(26,26,36,0.7);
+    color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; gap:6px;
+    transition:transform .15s, opacity .2s;
+  }
+  .response-pill:active{transform:scale(0.95);}
+  .response-pill.chosen{border-color:rgba(124,92,255,0.5); background:rgba(124,92,255,0.18); color:#D7CCFF;}
+  .response-pill.faded{opacity:0.35;}
+  .response-pill[disabled]{cursor:default;}
+
+  /* ---------- Brain dump ---------- */
+  textarea{
+    width:100%; background:transparent; border:none; outline:none; resize:none;
+    color:var(--text-primary); font-size:16px; font-family:inherit; min-height:90px;
+    line-height:1.4;
+  }
+  textarea::placeholder{color:var(--text-tertiary);}
+  .bd-entry{margin-bottom:12px;}
+  .bd-entry .row{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
+  .bd-entry .txt{font-size:15px; line-height:1.4; flex:1;}
+  .bd-entry .del{color:var(--text-tertiary); font-size:18px; cursor:pointer; line-height:1; padding:2px;}
+  .bd-entry .time{color:var(--text-tertiary); font-size:12px; margin-top:8px;}
+  .empty-hint{color:var(--text-tertiary); font-size:14px; text-align:center; margin-top:30px;}
+
+  /* ---------- Projects ---------- */
+  .proj-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .add-btn{
+    width:40px; height:40px; border-radius:20px; background:rgba(124,92,255,0.18);
+    display:flex; align-items:center; justify-content:center; color:#D7CCFF;
+    font-size:22px; font-weight:600; cursor:pointer; border:none;
+  }
+  .add-btn:active{transform:scale(0.92);}
+  .proj-card{margin-bottom:16px;}
+  .proj-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .proj-title{font-size:16px; font-weight:600; flex:1; margin-right:10px;}
+  .proj-pct{color:var(--text-tertiary); font-size:12px; margin-top:10px;}
+
+  .slider-track{
+    height:10px; border-radius:5px; background:rgba(255,255,255,0.08); position:relative;
+    touch-action:none; cursor:pointer;
+  }
+  .slider-fill{height:100%; border-radius:5px; width:0%; transition:width .05s linear;}
+  .slider-thumb{
+    position:absolute; top:50%; width:22px; height:22px; border-radius:11px; background:#fff;
+    transform:translate(-50%,-50%); box-shadow:0 2px 8px rgba(0,0,0,0.4);
+    transition:left .05s linear, transform .15s ease;
+  }
+  .slider-track.dragging .slider-thumb{transform:translate(-50%,-50%) scale(1.3);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100;
+    display:none; align-items:center; justify-content:center; padding:24px;
+  }
+  .modal-overlay.active{display:flex; animation:fadeIn .25s ease both;}
+  .modal-box{width:100%; max-width:420px;}
+  .modal-title{font-size:18px; font-weight:800; margin-bottom:16px;}
+  .modal-input{
+    width:100%; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
+    padding:13px 14px; color:var(--text-primary); font-size:16px; margin-bottom:16px; font-family:inherit;
+    outline:none;
+  }
+  .modal-actions{display:flex; gap:12px;}
+  .modal-actions .btn{flex:1;}
+
+  /* ---------- Night check-in screen ---------- */
+  #nightCheckin{
+    position:fixed; inset:0; z-index:90; background:var(--bg); display:none;
+    flex-direction:column; max-width:560px; margin:0 auto;
+  }
+  #nightCheckin.active{display:flex; animation:slideUp .35s cubic-bezier(.2,.8,.2,1) both;}
+  @keyframes slideUp{from{transform:translateY(100%);} to{transform:translateY(0);}}
+  .nc-scroll{flex:1; overflow-y:auto; padding:20px 20px 60px; -webkit-overflow-scrolling:touch;}
+  .nc-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-top:env(safe-area-inset-top,8px);}
+  .nc-close{color:var(--text-tertiary); font-size:22px; cursor:pointer;}
+  .nc-q{color:var(--text-secondary); font-size:16px; margin-bottom:12px;}
+  .nc-block{margin-bottom:20px;}
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{
+    position:fixed; bottom:0; left:0; right:0; max-width:560px; margin:0 auto;
+    height:88px; padding-bottom:24px; padding-top:8px;
+    background:rgba(15,15,20,0.92); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+    border-top:1px solid var(--border-subtle);
+    display:flex; z-index:50;
+  }
+  .tab-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; cursor:pointer; color:var(--text-tertiary); font-family:inherit;
+    padding-top:4px;
+  }
+  .tab-btn .icon{font-size:20px; opacity:0.45; transition:opacity .2s, transform .2s;}
+  .tab-btn .lbl{font-size:11px; font-weight:600; color:var(--text-tertiary); transition:color .2s;}
+  .tab-btn.active .icon{opacity:1; transform:scale(1.05);}
+  .tab-btn.active .lbl{color:#D7CCFF;}
+
+  /* Toast */
+  #toast{
+    position:fixed; bottom:110px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:rgba(26,26,36,0.95); border:1px solid var(--border-subtle); backdrop-filter:blur(20px);
+    color:var(--text-primary); padding:12px 20px; border-radius:18px; font-size:14px; font-weight:600;
+    opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; z-index:200; max-width:80%; text-align:center;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ HOME ============ -->
+  <div class="screen active" id="screen-home">
+    <h1 class="title" id="homeGreeting">Good Morning 👋</h1>
+    <div id="streakBadgeWrap"></div>
+
+    <div id="setupFlow"></div>
+    <div id="missionsFlow" style="display:none;"></div>
+  </div>
+
+  <!-- ============ COACH ============ -->
+  <div class="screen" id="screen-coach">
+    <h1 class="title">Coach</h1>
+    <div style="height:8px;"></div>
+    <div id="coachLines"></div>
+  </div>
+
+  <!-- ============ BRAIN DUMP ============ -->
+  <div class="screen" id="screen-braindump" style="padding-bottom:0;">
+    <div style="padding:0 0 0;">
+      <h1 class="title">Brain Dump</h1>
+      <p class="subtitle">Get it out of your head. No folders, no pressure.</p>
+      <div class="card">
+        <textarea id="bdInput" placeholder="What's on your mind?"></textarea>
+      </div>
+      <div style="margin:14px 0 4px;">
+        <button class="btn btn-primary" id="bdAddBtn" disabled>Quick Add</button>
+      </div>
+    </div>
+    <div id="bdList" style="margin-top:12px; padding-bottom:140px;"></div>
+  </div>
+
+  <!-- ============ PROJECTS ============ -->
+  <div class="screen" id="screen-projects">
+    <div class="proj-header">
+      <h1 class="title" style="margin-bottom:0;">Projects</h1>
+      <button class="add-btn" id="projAddBtn">+</button>
+    </div>
+    <p class="subtitle">Your works in progress. Drag to update.</p>
+    <div id="projList"></div>
+  </div>
+
+</div>
+
+<!-- ============ NIGHT CHECK-IN (modal-style screen) ============ -->
+<div id="nightCheckin">
+  <div class="nc-scroll">
+    <div class="nc-header">
+      <h1 class="title" style="margin:0;">Night Check-in 🌙</h1>
+      <span class="nc-close" id="ncClose">✕</span>
+    </div>
+
+    <div class="nc-block">
+      <p class="nc-q">What are you proud of today?</p>
+      <div class="card"><textarea id="ncProud" placeholder="Anything counts." style="min-height:60px;"></textarea></div>
+    </div>
+    <div class="nc-block">
+      <p class="nc-q">What stopped you today?</p>
+      <div class="card"><textarea id="ncStopped" placeholder="No judgment here." style="min-height:60px;"></textarea></div>
+    </div>
+    <div class="nc-block" style="margin-bottom:28px;">
+      <p class="nc-q">What's tomorrow's next move?</p>
+      <div class="card"><textarea id="ncNext" placeholder="Just one thing." style="min-height:60px;"></textarea></div>
+    </div>
+
+    <button class="btn btn-primary" id="ncSaveBtn">Save &amp; Close</button>
+  </div>
+</div>
+
+<!-- ============ NEW PROJECT MODAL ============ -->
+<div class="modal-overlay" id="projModal">
+  <div class="modal-box">
+    <div class="card glow">
+      <div class="modal-title">New Project</div>
+      <input class="modal-input" id="projTitleInput" placeholder="e.g. Funny Compilation" />
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="projCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="projCreateBtn" disabled>Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ============ TAB BAR ============ -->
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="home"><span class="icon">🏠</span><span class="lbl">Home</span></button>
+  <button class="tab-btn" data-tab="coach"><span class="icon">💬</span><span class="lbl">Coach</span></button>
+  <button class="tab-btn" data-tab="braindump"><span class="icon">🧠</span><span class="lbl">Brain Dump</span></button>
+  <button class="tab-btn" data-tab="projects"><span class="icon">🎬</span><span class="lbl">Projects</span></button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============================================================
+  // STORAGE LAYER  (localStorage stand-in for AsyncStorage)
+  // ============================================================
+  const KEYS = {
+    DAY_PLAN: 'nm:currentDayPlan',
+    BRAIN_DUMP: 'nm:brainDump',
+    PROJECTS: 'nm:projects',
+    NIGHT_CHECKINS: 'nm:nightCheckins',
+    STREAK: 'nm:streak',
+    COACH_CHECKINS: 'nm:coachCheckins'
+  };
+
+  function getJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function setJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+
+  // ============================================================
+  // DATE HELPERS
+  // ============================================================
+  function todayKey(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function daysBetween(a,b){
+    const [ay,am,ad] = a.split('-').map(Number);
+    const [by,bm,bd] = b.split('-').map(Number);
+    const da = new Date(ay,am-1,ad);
+    const db = new Date(by,bm-1,bd);
+    return Math.round((db-da)/(1000*60*60*24));
+  }
+  function greetingForNow(){
+    const h = new Date().getHours();
+    if(h<5) return 'Still up';
+    if(h<12) return 'Good Morning';
+    if(h<17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+  function isNightTime(){
+    const h = new Date().getHours();
+    return h>=20 || h<4;
+  }
+  function timeAgo(iso){
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff/60000);
+    if(mins<1) return 'just now';
+    if(mins<60) return `${mins}m ago`;
+    const hrs = Math.floor(mins/60);
+    if(hrs<24) return `${hrs}h ago`;
+    return `${Math.floor(hrs/24)}d ago`;
+  }
+
+  // ============================================================
+  // STREAK ENGINE  (2-consecutive-day grace period)
+  // ============================================================
+  function getStreak(){
+    return getJSON(KEYS.STREAK, {currentStreak:0, longestStreak:0, lastCompletedDate:null, consecutiveMisses:0});
+  }
+  function saveStreak(s){ setJSON(KEYS.STREAK, s); }
+
+  function registerCreatorDayCompletion(){
+    const streak = getStreak();
+    const today = todayKey();
+    if(streak.lastCompletedDate === today) return streak;
+
+    if(!streak.lastCompletedDate){
+      const updated = {currentStreak:1, longestStreak:Math.max(1,streak.longestStreak), lastCompletedDate:today, consecutiveMisses:0};
+      saveStreak(updated);
+      return updated;
+    }
+
+    const gap = daysBetween(streak.lastCompletedDate, today);
+    let next;
+    if(gap<=1) next = streak.currentStreak+1;          // consecutive day
+    else if(gap===2) next = streak.currentStreak+1;      // 1 day missed, forgiven
+    else next = 1;                                        // 2+ days missed, reset
+
+    const updated = {currentStreak:next, longestStreak:Math.max(next,streak.longestStreak), lastCompletedDate:today, consecutiveMisses:0};
+    saveStreak(updated);
+    return updated;
+  }
+
+  function checkStreakDecay(){
+    const streak = getStreak();
+    if(!streak.lastCompletedDate) return streak;
+    const gap = daysBetween(streak.lastCompletedDate, todayKey());
+    if(gap>=3 && streak.currentStreak!==0){
+      const reset = {currentStreak:0, longestStreak:streak.longestStreak, lastCompletedDate:streak.lastCompletedDate, consecutiveMisses:gap-1};
+      saveStreak(reset);
+      return reset;
+    }
+    return streak;
+  }
+
+  // ============================================================
+  // MISSION ENGINE
+  // ============================================================
+  let idCounter = 0;
+  function nextId(prefix){ idCounter++; return `${prefix}_${Date.now()}_${idCounter}`; }
+
+  const TEMPLATES = {
+    shorts: {
+      dead:   {main:'Edit one Short', skill:'Watch 15 minutes of editing inspo', bonus:'Reply to a few comments'},
+      okay:   {main:'Edit and post one Short', skill:'Study a creator who shorts well', bonus:'Queue up 2 more clip ideas'},
+      locked: {main:'Edit and post 3 Shorts', skill:'Batch-cut clips for tomorrow', bonus:"Schedule the week's Shorts"}
+    },
+    longform: {
+      dead:   {main:'Open the long-form project for 10 minutes', skill:'Watch 15 minutes of editing inspo', bonus:'Jot 3 title ideas'},
+      okay:   {main:'Work 45 minutes on long-form', skill:'Tighten one section of the edit', bonus:'Design a thumbnail concept'},
+      locked: {main:'Finish a full long-form edit pass', skill:'Color grade or sound pass', bonus:'Write the description + tags'}
+    },
+    streaming: {
+      dead:   {main:'Go live for 20 minutes, low pressure', skill:'Watch 15 minutes of a streamer you admire', bonus:'Update your stream title'},
+      okay:   {main:'Stream for an hour', skill:'Test one new overlay or alert', bonus:'Clip your best stream moment'},
+      locked: {main:'Stream today', skill:'Work 45 minutes on long-form from the VOD', bonus:"Schedule tomorrow's uploads"}
+    },
+    learning: {
+      dead:   {main:'Watch one short tutorial', skill:'Take 3 notes from it', bonus:"Save it somewhere you'll find it again"},
+      okay:   {main:'Study one editing or growth technique for 30 minutes', skill:'Try the technique on an old clip', bonus:'Share what you learned with your community'},
+      locked: {main:'Deep dive: 1 hour studying top creators in your niche', skill:'Apply 2 techniques to a current project', bonus:'Write a mini breakdown of what worked'}
+    },
+    brainstorming: {
+      dead:   {main:'Brain dump 3 video ideas, no judging them', skill:'Skim your saved ideas list', bonus:'Star your favorite one'},
+      okay:   {main:'Brainstorm and outline 1 video concept', skill:'Look at 3 competitor titles for inspiration', bonus:'Voice-memo a rough script idea'},
+      locked: {main:'Map out content for the next 2 weeks', skill:'Write a full outline for your next video', bonus:'Pitch one collab idea to a collaborator'}
+    }
+  };
+
+  function applyTimeAdjustment(title, time){
+    if(time==='30min'){
+      return title
+        .replace('Work 45 minutes','Work 20 minutes')
+        .replace('Work 90 minutes','Work 20 minutes')
+        .replace('Stream for an hour','Stream for 20 minutes')
+        .replace('Stream for 2+ hours','Stream for 20 minutes')
+        .replace('Stream today','Go live for 20 minutes')
+        .replace('Deep dive: 1 hour','Quick 20-minute dive');
+    }
+    if(time==='4plus'){
+      return title
+        .replace('Work 45 minutes','Work 90 minutes')
+        .replace('Edit one Short','Edit two Shorts')
+        .replace('Stream for an hour','Stream for 2+ hours')
+        .replace('Stream today','Stream for 2+ hours today');
+    }
+    return title;
+  }
+
+  function generateDayPlanMissions(setup){
+    const t = TEMPLATES[setup.focus][setup.energy];
+    return [
+      {id:nextId('mission'), tier:'main',  title:applyTimeAdjustment(t.main, setup.time), status:'pending'},
+      {id:nextId('mission'), tier:'skill', title:applyTimeAdjustment(t.skill, setup.time), status:'pending'},
+      {id:nextId('mission'), tier:'bonus', title:applyTimeAdjustment(t.bonus, setup.time), status:'pending'}
+    ];
+  }
+
+  // Ordered most-specific-first. Every main/skill/bonus string across every
+  // focus x energy combo has an explicit, sensible reduction here so the
+  // generic fallback is rarely needed.
+  const REDUCTIONS = [
+    // shorts
+    [/^Edit and post 3 Shorts$/i, 'Edit one Short'],
+    [/^Edit and post one Short$/i, 'Edit one short clip, no posting pressure'],
+    [/^Edit one Short$/i, 'Open the editor for 5 minutes'],
+    [/^Edit two Shorts$/i, 'Edit one Short'],
+    [/^Batch-cut clips for tomorrow$/i, 'Cut one clip'],
+    [/^Study a creator who shorts well$/i, 'Watch one Short you admire'],
+    // long-form
+    [/^Finish a full long-form edit pass$/i, 'Work 15 minutes on long-form'],
+    [/^Work 90 minutes on long-form$/i, 'Work 15 minutes on long-form'],
+    [/^Work 45 minutes on long-form$/i, 'Work 15 minutes on long-form'],
+    [/^Work 20 minutes on long-form$/i, 'Open the project, no pressure'],
+    [/^Open the long-form project for 10 minutes$/i, 'Just open the project — that\'s it'],
+    [/^Tighten one section of the edit$/i, 'Watch back one section'],
+    [/^Color grade or sound pass$/i, 'Tighten one section of the edit'],
+    // streaming
+    [/^Stream for 2\+ hours$/i, 'Stream for 20 minutes'],
+    [/^Stream for 2\+ hours today$/i, 'Stream for 20 minutes'],
+    [/^Stream for an hour$/i, 'Stream for 15 minutes'],
+    [/^Stream today$/i, 'Go live for 15 minutes'],
+    [/^Go live for 20 minutes$/i, 'Go live for 5 minutes, just to say hi'],
+    [/^Go live for 20 minutes, low pressure$/i, 'Go live for 5 minutes, just to say hi'],
+    [/^Test one new overlay or alert$/i, 'Glance at your current overlay setup'],
+    // learning
+    [/^Deep dive: 1 hour studying top creators in your niche$/i, 'Watch one short tutorial'],
+    [/^Quick 20-minute dive$/i, 'Watch one short tutorial'],
+    [/^Study one editing or growth technique for 30 minutes$/i, 'Watch one short tutorial'],
+    [/^Watch one short tutorial$/i, 'Save one tutorial for later, no watching required'],
+    [/^Apply 2 techniques to a current project$/i, 'Apply 1 technique to a current project'],
+    [/^Try the technique on an old clip$/i, 'Just watch the technique again'],
+    // brainstorming
+    [/^Map out content for the next 2 weeks$/i, 'Jot down 3 video ideas'],
+    [/^Brainstorm and outline 1 video concept$/i, 'Jot down 1 rough idea'],
+    [/^Brain dump 3 video ideas, no judging them$/i, 'Jot down 1 idea, even a bad one'],
+    [/^Write a full outline for your next video$/i, 'Jot down 3 bullet points'],
+    [/^Look at 3 competitor titles for inspiration$/i, 'Look at 1 competitor title']
+  ];
+
+  function reduceMission(mission){
+    if(mission.wasReduced) return mission;
+    const base = mission.title;
+    let reducedTitle = base;
+    for(const [pattern, replacement] of REDUCTIONS){
+      if(pattern.test(base)){ reducedTitle = replacement; break; }
+    }
+    if(reducedTitle === base){
+      // Generic fallback — only reachable if a template string above was
+      // missed. Strip any existing quotes from base so we never nest them.
+      const clean = base.replace(/['"]/g, '');
+      reducedTitle = `Just spend 5 minutes on: ${clean}`;
+    }
+    return Object.assign({}, mission, {
+      title: reducedTitle,
+      originalTitle: mission.originalTitle || base,
+      wasReduced: true,
+      status: 'pending'
+    });
+  }
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  let toastTimer = null;
+  function showToast(msg){
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> el.classList.remove('show'), 2200);
+  }
+
+  // ============================================================
+  // HAPTIC-ish feedback (vibration API where available, silent fallback)
+  // ============================================================
+  function buzz(ms){
+    if(navigator.vibrate){ try{ navigator.vibrate(ms||10); }catch(e){} }
+  }
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  let dayPlan = null;       // current day's plan object or null
+  let streak = checkStreakDecay();
+  let homeSetup = {energy:null, time:null, focus:null};
+
+  function loadDayPlan(){
+    const existing = getJSON(KEYS.DAY_PLAN, null);
+    if(existing && existing.date === todayKey()){
+      dayPlan = existing;
+    } else {
+      dayPlan = null;
+    }
+  }
+  function saveDayPlan(){ setJSON(KEYS.DAY_PLAN, dayPlan); }
+
+  // ============================================================
+  // RENDER: HOME
+  // ============================================================
+  const TIME_OPTIONS = [
+    {value:'30min', label:'30 min'},
+    {value:'1hour', label:'1 hour'},
+    {value:'2hours', label:'2 hours'},
+    {value:'4plus', label:'4+ hours'}
+  ];
+  const FOCUS_OPTIONS = [
+    {value:'shorts', label:'Shorts', icon:'✂️'},
+    {value:'longform', label:'Long-form', icon:'🎞️'},
+    {value:'streaming', label:'Streaming', icon:'🔴'},
+    {value:'learning', label:'Learning', icon:'📚'},
+    {value:'brainstorming', label:'Brainstorming', icon:'💡'}
+  ];
+  const ENERGY_OPTIONS = [
+    {value:'dead', emoji:'🔴', label:'Dead', cls:'sel-dead'},
+    {value:'okay', emoji:'🟡', label:'Okay', cls:'sel-okay'},
+    {value:'locked', emoji:'🟢', label:'Locked In', cls:'sel-locked'}
+  ];
+
+  function renderStreakBadge(){
+    const wrap = document.getElementById('streakBadgeWrap');
+    const s = streak.currentStreak || 0;
+    if(s<=0){
+      wrap.innerHTML = `<div class="streak-badge empty">Start your first Creator Day</div>`;
+    } else {
+      wrap.innerHTML = `<div class="streak-badge">🔥 ${s} Creator Day${s===1?'':'s'}</div>`;
+    }
+  }
+
+  function renderHome(){
+    document.getElementById('homeGreeting').textContent = `${greetingForNow()} 👋`;
+    renderStreakBadge();
+
+    const setupFlow = document.getElementById('setupFlow');
+    const missionsFlow = document.getElementById('missionsFlow');
+
+    if(!dayPlan){
+      setupFlow.style.display = 'block';
+      missionsFlow.style.display = 'none';
+      renderSetupFlow();
+    } else {
+      setupFlow.style.display = 'none';
+      missionsFlow.style.display = 'block';
+      renderMissionsFlow();
+    }
+  }
+
+  function renderSetupFlow(){
+    const el = document.getElementById('setupFlow');
+    el.innerHTML = `
+      <p class="subtitle" style="margin-bottom:24px;">What kind of day is today?</p>
+      <div class="energy-row" id="energyRow"></div>
+
+      <p class="section-label">How much time do you realistically have?</p>
+      <div class="pill-row" id="timeRow"></div>
+
+      <p class="section-label">Today's Focus</p>
+      <div class="pill-row" id="focusRow"></div>
+
+      <div style="margin-top:36px;">
+        <button class="btn btn-primary" id="generateBtn" disabled>Generate Day</button>
+      </div>
+    `;
+
+    const energyRow = document.getElementById('energyRow');
+    ENERGY_OPTIONS.forEach(opt=>{
+      const card = document.createElement('div');
+      card.className = 'energy-card' + (homeSetup.energy===opt.value ? ' '+opt.cls : '');
+      card.innerHTML = `<span class="emoji">${opt.emoji}</span><span class="label">${opt.label}</span>`;
+      card.addEventListener('click', ()=>{
+        buzz(8);
+        homeSetup.energy = opt.value;
+        renderSetupFlow();
+      });
+      energyRow.appendChild(card);
+    });
+
+    const timeRow = document.getElementById('timeRow');
+    TIME_OPTIONS.forEach(opt=>{
+      const pill = document.createElement('div');
+      pill.className = 'pill' + (homeSetup.time===opt.value ? ' selected' : '');
+      pill.innerHTML = `<span>${opt.label}</span>`;
+      pill.addEventListener('click', ()=>{
+        buzz(8);
+        homeSetup.time = opt.value;
+        renderSetupFlow();
+      });
+      timeRow.appendChild(pill);
+    });
+
+    const focusRow = document.getElementById('focusRow');
+    FOCUS_OPTIONS.forEach(opt=>{
+      const pill = document.createElement('div');
+      pill.className = 'pill' + (homeSetup.focus===opt.value ? ' selected' : '');
+      pill.innerHTML = `<span>${opt.icon}</span><span>${opt.label}</span>`;
+      pill.addEventListener('click', ()=>{
+        buzz(8);
+        homeSetup.focus = opt.value;
+        renderSetupFlow();
+      });
+      focusRow.appendChild(pill);
+    });
+
+    const genBtn = document.getElementById('generateBtn');
+    const canGenerate = homeSetup.energy && homeSetup.time && homeSetup.focus;
+    genBtn.disabled = !canGenerate;
+    genBtn.addEventListener('click', ()=>{
+      if(!canGenerate) return;
+      buzz(15);
+      const missions = generateDayPlanMissions(homeSetup);
+      dayPlan = {date: todayKey(), setup: Object.assign({}, homeSetup), missions, createdAt: new Date().toISOString()};
+      saveDayPlan();
+      renderHome();
+    });
+  }
+
+  function allMissionsDone(){
+    return dayPlan && dayPlan.missions.every(m=>m.status==='completed');
+  }
+
+  function renderMissionsFlow(){
+    const el = document.getElementById('missionsFlow');
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 style="font-size:20px; font-weight:800; margin:0;">Today's Missions</h2>
+        <span id="regenerateBtn" style="color:var(--accent-soft); font-size:14px; font-weight:700; cursor:pointer;">Regenerate</span>
+      </div>
+      <div id="missionList"></div>
+      <div id="allDoneCard" style="display:none; margin-top:6px;"></div>
+      <div id="nightCard" style="display:none; margin-top:20px;"></div>
+    `;
+
+    document.getElementById('regenerateBtn').addEventListener('click', ()=>{
+      buzz(10);
+      const missions = generateDayPlanMissions(dayPlan.setup);
+      dayPlan = Object.assign({}, dayPlan, {missions});
+      saveDayPlan();
+      renderHome();
+    });
+
+    const list = document.getElementById('missionList');
+    dayPlan.missions.forEach(m=> list.appendChild(buildMissionCard(m)));
+
+    if(allMissionsDone()){
+      const doneCard = document.getElementById('allDoneCard');
+      doneCard.style.display = 'block';
+      doneCard.innerHTML = `
+        <div class="card glow">
+          <div style="font-weight:700; margin-bottom:4px;">That's a Creator Day. 🎉</div>
+          <div style="color:var(--text-secondary); font-size:14px;">You showed up today. That's the whole game.</div>
+        </div>`;
+    }
+
+    if(isNightTime()){
+      const nightCard = document.getElementById('nightCard');
+      nightCard.style.display = 'block';
+      nightCard.innerHTML = `
+        <div class="card" id="nightCardInner" style="cursor:pointer;">
+          <div style="font-weight:700; margin-bottom:4px;">🌙 Night Check-in</div>
+          <div style="color:var(--text-secondary); font-size:14px;">Take 60 seconds to close out your day</div>
+        </div>`;
+      document.getElementById('nightCardInner').addEventListener('click', openNightCheckin);
+    }
+  }
+
+  const TIER_LABEL = {main:'MAIN MISSION', skill:'SKILL MISSION', bonus:'BONUS'};
+
+  function buildMissionCard(mission){
+    const wrap = document.createElement('div');
+    wrap.className = 'mission-wrap';
+
+    const fillBg = document.createElement('div');
+    fillBg.className = 'mission-fill-bg';
+    const fill = document.createElement('div');
+    fill.className = 'mission-fill';
+    fillBg.appendChild(fill);
+    wrap.appendChild(fillBg);
+
+    const card = document.createElement('div');
+    card.className = 'mission-card' + (mission.status==='completed' ? ' completed' : '');
+
+    const isCompleted = mission.status === 'completed';
+
+    card.innerHTML = `
+      <div class="mission-top">
+        <span class="mission-tier ${mission.tier}">${TIER_LABEL[mission.tier]}</span>
+        <div class="check-circle">✓</div>
+      </div>
+      <div class="mission-title ${isCompleted?'done':''}">${escapeHtml(mission.title)}</div>
+      ${mission.wasReduced && !isCompleted ? `<div class="mission-reduced-note">Scaled down for you — no pressure 💜</div>` : ''}
+      ${!isCompleted ? `<div class="mission-hint">Swipe right to complete →</div>` : ''}
+    `;
+    wrap.appendChild(card);
+
+    if(!isCompleted){
+      attachSwipe(card, fill, ()=> completeMission(mission.id));
+    }
+
+    return wrap;
+  }
+
+  function attachSwipe(card, fillEl, onComplete){
+    let startX = 0, currentX = 0, dragging = false;
+    const threshold = Math.min(window.innerWidth, 560) * 0.32;
+    const hint = card.querySelector('.mission-hint');
+
+    function setX(x){
+      currentX = x;
+      const visual = x > 0 ? x : x * 0.15;
+      card.style.transform = `translateX(${visual}px)`;
+      const pct = Math.max(0, Math.min(100, (visual/threshold)*100));
+      fillEl.style.width = pct + '%';
+      if(hint) hint.style.opacity = Math.max(0, 1 - (visual/(threshold*0.6)));
+    }
+
+    function onDown(e){
+      dragging = true;
+      startX = (e.touches ? e.touches[0].clientX : e.clientX);
+      card.classList.add('dragging');
+      card.classList.remove('snap-back');
+    }
+    function onMove(e){
+      if(!dragging) return;
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      setX(x - startX);
+      if(e.cancelable) e.preventDefault();
+    }
+    function onUp(){
+      if(!dragging) return;
+      dragging = false;
+      card.classList.remove('dragging');
+      card.classList.add('snap-back');
+      if(currentX > threshold){
+        buzz(20);
+        card.style.transform = `translateX(${Math.min(window.innerWidth,560)}px)`;
+        fillEl.style.width = '100%';
+        setTimeout(()=>{ onComplete(); }, 220);
+      } else {
+        setX(0);
+      }
+    }
+
+    card.addEventListener('touchstart', onDown, {passive:true});
+    card.addEventListener('touchmove', onMove, {passive:false});
+    card.addEventListener('touchend', onUp);
+    card.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', (e)=>{ if(dragging) onMove(e); });
+    window.addEventListener('mouseup', onUp);
+  }
+
+  function completeMission(id){
+    dayPlan.missions = dayPlan.missions.map(m => m.id===id ? Object.assign({}, m, {status:'completed'}) : m);
+    saveDayPlan();
+    streak = registerCreatorDayCompletion();
+    renderHome();
+  }
+
+  function reduceMissionById(id){
+    dayPlan.missions = dayPlan.missions.map(m => m.id===id ? reduceMission(m) : m);
+    saveDayPlan();
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ============================================================
+  // NIGHT CHECK-IN
+  // ============================================================
+  function openNightCheckin(){
+    const existing = getJSON(KEYS.NIGHT_CHECKINS, []).find(e=>e.date===todayKey());
+    document.getElementById('ncProud').value = existing ? existing.proudOf : '';
+    document.getElementById('ncStopped').value = existing ? existing.whatStopped : '';
+    document.getElementById('ncNext').value = existing ? existing.nextMove : '';
+    document.getElementById('nightCheckin').classList.add('active');
+  }
+  function closeNightCheckin(){
+    document.getElementById('nightCheckin').classList.remove('active');
+  }
+  document.getElementById('ncClose').addEventListener('click', closeNightCheckin);
+  document.getElementById('ncSaveBtn').addEventListener('click', ()=>{
+    buzz(15);
+    const entries = getJSON(KEYS.NIGHT_CHECKINS, []);
+    const filtered = entries.filter(e=>e.date!==todayKey());
+    filtered.push({
+      date: todayKey(),
+      proudOf: document.getElementById('ncProud').value.trim(),
+      whatStopped: document.getElementById('ncStopped').value.trim(),
+      nextMove: document.getElementById('ncNext').value.trim(),
+      completedAt: new Date().toISOString()
+    });
+    setJSON(KEYS.NIGHT_CHECKINS, filtered.slice(-60));
+    closeNightCheckin();
+    showToast('Saved. Rest well. 🌙');
+  });
+
+  // ============================================================
+  // COACH TAB
+  // ============================================================
+  const RESPONSES = [
+    {value:'done', label:'Done', emoji:'✅'},
+    {value:'working_on_it', label:'Working on it', emoji:'🛠️'},
+    {value:'not_started', label:"Haven't started", emoji:'😅'}
+  ];
+  let coachResponded = {}; // missionId -> response, resets each render pass from storage-free session state
+  let coachQuestionText = {}; // missionId -> the question text as first asked, frozen even if title changes later
+  let reducedMessage = null;
+
+  function coachLineHtml(text){
+    return `<div class="coach-line"><div class="card">${escapeHtml(text)}</div></div>`;
+  }
+
+  function renderCoach(){
+    const el = document.getElementById('coachLines');
+    let html = coachLineHtml("Hey — no pressure here. Just checking in on how today's going. 💜");
+
+    const activeMissions = dayPlan ? dayPlan.missions.filter(m=>m.status!=='completed') : [];
+
+    if(!dayPlan){
+      html += coachLineHtml("You haven't set up today yet. Head to Home and tell me about your day — I'll keep it light.");
+    } else if(activeMissions.length===0){
+      html += coachLineHtml("Everything's done. Seriously — go be proud of that. 🎉");
+    }
+
+    el.innerHTML = html;
+
+    if(dayPlan && activeMissions.length>0){
+      activeMissions.forEach(mission=>{
+        const block = document.createElement('div');
+        block.style.marginBottom = '6px';
+        if(!coachQuestionText[mission.id]){
+          coachQuestionText[mission.id] = mission.title;
+        }
+        block.innerHTML = coachLineHtml(`How's "${escapeHtml(coachQuestionText[mission.id])}" going?`);
+
+        const row = document.createElement('div');
+        row.className = 'response-row';
+        const responded = coachResponded[mission.id];
+
+        RESPONSES.forEach(opt=>{
+          const isSel = responded === opt.value;
+          const pillBtn = document.createElement('button');
+          pillBtn.className = 'response-pill' + (isSel?' chosen':'') + (responded && !isSel ? ' faded':'');
+          pillBtn.disabled = !!responded;
+          pillBtn.innerHTML = `<span>${opt.emoji}</span><span>${opt.label}</span>`;
+          pillBtn.addEventListener('click', ()=> handleCoachResponse(mission, opt.value));
+          row.appendChild(pillBtn);
+        });
+        block.appendChild(row);
+        el.appendChild(block);
+      });
+    }
+
+    if(reducedMessage){
+      const div = document.createElement('div');
+      div.innerHTML = coachLineHtml(reducedMessage);
+      el.appendChild(div);
+    }
+  }
+
+  function handleCoachResponse(mission, response){
+    buzz(10);
+    coachResponded[mission.id] = response;
+
+    const checkins = getJSON(KEYS.COACH_CHECKINS, []);
+    checkins.push({date: todayKey(), missionId: mission.id, response, timestamp: new Date().toISOString()});
+    setJSON(KEYS.COACH_CHECKINS, checkins.slice(-200));
+
+    if(response === 'done'){
+      completeMission(mission.id);
+    } else if(response === 'not_started'){
+      reduceMissionById(mission.id);
+      reducedMessage = `No worries — I shrunk "${mission.title}" down to something way smaller. Check Home when you're ready.`;
+    }
+    renderCoach();
+  }
+
+  // ============================================================
+  // BRAIN DUMP TAB
+  // ============================================================
+  function renderBrainDump(){
+    const entries = getJSON(KEYS.BRAIN_DUMP, []);
+    const list = document.getElementById('bdList');
+    if(entries.length===0){
+      list.innerHTML = `<div class="empty-hint">Your ideas will show up here, newest first.</div>`;
+      return;
+    }
+    list.innerHTML = '';
+    entries.forEach(entry=>{
+      const div = document.createElement('div');
+      div.className = 'bd-entry';
+      div.innerHTML = `
+        <div class="card">
+          <div class="row">
+            <div class="txt">${escapeHtml(entry.text)}</div>
+            <div class="del" data-id="${entry.id}">✕</div>
+          </div>
+          <div class="time">${timeAgo(entry.createdAt)}</div>
+        </div>`;
+      div.querySelector('.del').addEventListener('click', ()=> deleteBrainDumpEntry(entry.id));
+      list.appendChild(div);
+    });
+  }
+
+  function addBrainDumpEntry(text){
+    const entries = getJSON(KEYS.BRAIN_DUMP, []);
+    entries.unshift({id:`bd_${Date.now()}`, text, createdAt: new Date().toISOString()});
+    setJSON(KEYS.BRAIN_DUMP, entries);
+    renderBrainDump();
+  }
+  function deleteBrainDumpEntry(id){
+    buzz(8);
+    const entries = getJSON(KEYS.BRAIN_DUMP, []).filter(e=>e.id!==id);
+    setJSON(KEYS.BRAIN_DUMP, entries);
+    renderBrainDump();
+  }
+
+  const bdInput = document.getElementById('bdInput');
+  const bdAddBtn = document.getElementById('bdAddBtn');
+  bdInput.addEventListener('input', ()=>{ bdAddBtn.disabled = !bdInput.value.trim(); });
+  bdAddBtn.addEventListener('click', ()=>{
+    const text = bdInput.value.trim();
+    if(!text) return;
+    buzz(10);
+    addBrainDumpEntry(text);
+    bdInput.value = '';
+    bdAddBtn.disabled = true;
+  });
+
+  // ============================================================
+  // PROJECTS TAB
+  // ============================================================
+  const PALETTE = ['#7C5CFF','#5FD9D9','#FFC857','#FF5C7A','#3DDC84'];
+
+  function renderProjects(){
+    const projects = getJSON(KEYS.PROJECTS, []);
+    const list = document.getElementById('projList');
+    if(projects.length===0){
+      list.innerHTML = `<div class="empty-hint">No projects yet. Tap + to add one.</div>`;
+      return;
+    }
+    list.innerHTML = '';
+    projects.forEach((proj, i)=>{
+      const color = PALETTE[i % PALETTE.length];
+      const div = document.createElement('div');
+      div.className = 'proj-card';
+      div.innerHTML = `
+        <div class="card">
+          <div class="proj-top">
+            <div class="proj-title">${escapeHtml(proj.title)}</div>
+            <div class="del" data-id="${proj.id}" style="color:var(--text-tertiary); cursor:pointer; font-size:16px;">✕</div>
+          </div>
+          <div class="slider-track" data-id="${proj.id}">
+            <div class="slider-fill" style="background:${color}; width:${proj.progress}%;"></div>
+            <div class="slider-thumb" style="left:${proj.progress}%; box-shadow:0 2px 8px ${color}66;"></div>
+          </div>
+          <div class="proj-pct">${proj.progress}% complete</div>
+        </div>`;
+
+      div.querySelector('.del').addEventListener('click', ()=> deleteProject(proj.id));
+      attachSlider(div.querySelector('.slider-track'), proj.id, color);
+      list.appendChild(div);
+    });
+  }
+
+  function attachSlider(trackEl, projId, color){
+    let dragging = false;
+
+    function setFromClientX(clientX){
+      const rect = trackEl.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      trackEl.querySelector('.slider-fill').style.width = pct + '%';
+      trackEl.querySelector('.slider-thumb').style.left = pct + '%';
+      return pct;
+    }
+
+    function commit(pct){
+      const projects = getJSON(KEYS.PROJECTS, []);
+      const updated = projects.map(p => p.id===projId ? Object.assign({}, p, {progress: Math.round(pct), updatedAt: new Date().toISOString()}) : p);
+      setJSON(KEYS.PROJECTS, updated);
+      const pctLabel = trackEl.parentElement.querySelector('.proj-pct');
+      if(pctLabel) pctLabel.textContent = `${Math.round(pct)}% complete`;
+    }
+
+    function onDown(e){
+      dragging = true;
+      trackEl.classList.add('dragging');
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setFromClientX(x);
+    }
+    function onMove(e){
+      if(!dragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setFromClientX(x);
+      if(e.cancelable) e.preventDefault();
+    }
+    function onUp(e){
+      if(!dragging) return;
+      dragging = false;
+      trackEl.classList.remove('dragging');
+      const x = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
+      const pct = setFromClientX(x !== undefined ? x : (trackEl.getBoundingClientRect().left));
+      buzz(8);
+      commit(pct);
+    }
+
+    trackEl.addEventListener('touchstart', onDown, {passive:true});
+    trackEl.addEventListener('touchmove', onMove, {passive:false});
+    trackEl.addEventListener('touchend', onUp);
+    trackEl.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', (e)=>{ if(dragging) onMove(e); });
+    window.addEventListener('mouseup', onUp);
+  }
+
+  function deleteProject(id){
+    buzz(8);
+    const projects = getJSON(KEYS.PROJECTS, []).filter(p=>p.id!==id);
+    setJSON(KEYS.PROJECTS, projects);
+    renderProjects();
+  }
+
+  // New project modal
+  const projModal = document.getElementById('projModal');
+  const projTitleInput = document.getElementById('projTitleInput');
+  const projCreateBtn = document.getElementById('projCreateBtn');
+
+  document.getElementById('projAddBtn').addEventListener('click', ()=>{
+    projTitleInput.value = '';
+    projCreateBtn.disabled = true;
+    projModal.classList.add('active');
+    setTimeout(()=> projTitleInput.focus(), 50);
+  });
+  document.getElementById('projCancelBtn').addEventListener('click', ()=>{
+    projModal.classList.remove('active');
+  });
+  projTitleInput.addEventListener('input', ()=>{
+    projCreateBtn.disabled = !projTitleInput.value.trim();
+  });
+  projCreateBtn.addEventListener('click', ()=>{
+    const title = projTitleInput.value.trim();
+    if(!title) return;
+    buzz(10);
+    const now = new Date().toISOString();
+    const projects = getJSON(KEYS.PROJECTS, []);
+    projects.push({id:`proj_${Date.now()}`, title, progress:0, createdAt:now, updatedAt:now});
+    setJSON(KEYS.PROJECTS, projects);
+    projModal.classList.remove('active');
+    renderProjects();
+  });
+
+  // ============================================================
+  // TAB NAVIGATION
+  // ============================================================
+  const SCREENS = ['home','coach','braindump','projects'];
+  function switchTab(tab){
+    SCREENS.forEach(s=>{
+      document.getElementById('screen-'+s).classList.toggle('active', s===tab);
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.tab===tab);
+    });
+    if(tab==='coach') renderCoach();
+    if(tab==='braindump') renderBrainDump();
+    if(tab==='projects') renderProjects();
+    if(tab==='home') renderHome();
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+  });
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  loadDayPlan();
+  renderHome();
+
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {
+        // Offline support just won't be available this session — the app
+        // still works fine over the network without it.
+      });
+    });
+  }
+</script>
+</body>
+</html>

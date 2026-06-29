@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Next Move — PWA Diagnostic</title>
+<style>
+  body{background:#0A0A0F; color:#F5F5F7; font-family:-apple-system,sans-serif; padding:20px; line-height:1.5;}
+  h1{font-size:20px;}
+  .row{margin-bottom:16px; padding:14px; border-radius:12px; background:#1A1A24; border:1px solid #2A2A38;}
+  .ok{color:#3DDC84; font-weight:700;}
+  .bad{color:#FF5C7A; font-weight:700;}
+  .label{color:#A1A1AE; font-size:13px; margin-bottom:4px;}
+  pre{white-space:pre-wrap; word-break:break-all; font-size:12px; color:#A1A1AE; margin-top:8px;}
+  button{background:#7C5CFF; color:#fff; border:none; padding:14px 20px; border-radius:12px; font-size:16px; font-weight:700; width:100%;}
+</style>
+</head>
+<body>
+<h1>Next Move — Install Diagnostic</h1>
+<div id="results"></div>
+<button onclick="runChecks()">Run checks again</button>
+
+<script>
+async function runChecks(){
+  const results = document.getElementById('results');
+  results.innerHTML = '<div class="row">Running checks...</div>';
+  const rows = [];
+
+  function row(label, ok, detail){
+    rows.push(`<div class="row"><div class="label">${label}</div><span class="${ok?'ok':'bad'}">${ok?'✓ PASS':'✗ FAIL'}</span>${detail? '<pre>'+detail+'</pre>' : ''}</div>`);
+  }
+
+  // 1. HTTPS check
+  row('Served over HTTPS', location.protocol === 'https:', location.protocol);
+
+  // 2. Manifest link present in HTML
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  row('Manifest <link> tag found on this page', !!manifestLink, manifestLink ? manifestLink.href : 'no <link rel="manifest"> in document head');
+
+  // 3. Manifest actually fetchable
+  if(manifestLink){
+    try{
+      const resp = await fetch(manifestLink.href);
+      const text = await resp.text();
+      let parsed = null;
+      let parseErr = null;
+      try{ parsed = JSON.parse(text); }catch(e){ parseErr = e.message; }
+      row('Manifest file fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${manifestLink.href}`);
+      if(resp.ok){
+        row('Manifest is valid JSON', !parseErr, parseErr || JSON.stringify(parsed, null, 2));
+      }
+    }catch(e){
+      row('Manifest file fetch status', false, 'Fetch threw: ' + e.message);
+    }
+  }
+
+  // 4. Service worker support + registration
+  if('serviceWorker' in navigator){
+    try{
+      const reg = await navigator.serviceWorker.getRegistration();
+      if(reg){
+        row('Service worker registered', true, 'scope: ' + reg.scope + ' | active state: ' + (reg.active ? reg.active.state : 'none'));
+      } else {
+        row('Service worker registered', false, 'navigator.serviceWorker.getRegistration() returned nothing for this page');
+      }
+    }catch(e){
+      row('Service worker registered', false, 'Error checking registration: ' + e.message);
+    }
+
+    // try registering fresh right now and capture any error
+    try{
+      const swUrl = new URL('./service-worker.js', location.href).href;
+      const resp = await fetch(swUrl);
+      row('service-worker.js file fetch status', resp.ok, `HTTP ${resp.status} ${resp.statusText} — URL: ${swUrl}`);
+    }catch(e){
+      row('service-worker.js file fetch status', false, 'Fetch threw: ' + e.message);
+    }
+  } else {
+    row('Service worker support', false, 'navigator.serviceWorker not available in this browser context');
+  }
+
+  // 5. Icons fetchable
+  if(manifestLink){
+    try{
+      const resp = await fetch(manifestLink.href);
+      const manifest = await resp.json();
+      for(const icon of (manifest.icons || [])){
+        const iconUrl = new URL(icon.src, manifestLink.href).href;
+        try{
+          const iresp = await fetch(iconUrl);
+          row(`Icon fetch: ${icon.src} (${icon.sizes})`, iresp.ok, `HTTP ${iresp.status} — ${iconUrl}`);
+        }catch(e){
+          row(`Icon fetch: ${icon.src}`, false, 'Fetch threw: ' + e.message);
+        }
+      }
+    }catch(e){
+      row('Icon checks', false, 'Could not parse manifest to check icons: ' + e.message);
+    }
+  }
+
+  // 6. beforeinstallprompt capture
+  row('beforeinstallprompt fired this session', window.__bipFired === true, window.__bipFired ? 'Chrome offered to install' : 'Event has not fired yet on this page load (may still fire later, or criteria not yet met)');
+
+  // 7. Raw head HTML dump - shows exactly what's actually live
+  try {
+    const resp = await fetch(location.href, {cache: 'no-store'});
+    const html = await resp.text();
+    const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+    const headContent = headMatch ? headMatch[1] : 'Could not find <head> in fetched HTML';
+    rows.push(`<div class="row"><div class="label">Raw &lt;head&gt; HTML actually served right now (no-cache fetch)</div><pre>${headContent.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></div>`);
+  } catch(e) {
+    rows.push(`<div class="row"><div class="label">Raw head fetch</div><span class="bad">✗ FAIL</span><pre>${e.message}</pre></div>`);
+  }
+
+  results.innerHTML = rows.join('');
+}
+
+window.__bipFired = false;
+window.addEventListener('beforeinstallprompt', (e) => {
+  window.__bipFired = true;
+});
+
+runChecks();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Next Move — service worker
 // Bump CACHE_VERSION whenever index.html (or any cached asset) changes,
 // so installed devices actually pick up the update instead of serving stale cache.
-const CACHE_VERSION = 'nm-v2';
+const CACHE_VERSION = 'nm-v3';
 const ASSETS = [
   './',
   './index.html',

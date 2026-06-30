@@ -1,7 +1,7 @@
 // Next Move — service worker
 // Bump CACHE_VERSION whenever index.html (or any cached asset) changes,
 // so installed devices actually pick up the update instead of serving stale cache.
-const CACHE_VERSION = 'nm-v1';
+const CACHE_VERSION = 'nm-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,8 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './icon-192-maskable.png',
-  './icon-512-maskable.png'
+  './icon-512-maskable.png',
+  './diagnostic.html'
 ];
 
 self.addEventListener('install', (event) => {

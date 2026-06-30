@@ -276,6 +276,151 @@
     opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; z-index:200; max-width:80%; text-align:center;
   }
   #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ============================================================
+     ROADMAP (v1.1)
+  ============================================================ */
+
+  /* --- Month header / nav --- */
+  .rm-month-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .rm-month-title{font-size:20px; font-weight:800; letter-spacing:-0.3px;}
+  .rm-month-nav{display:flex; gap:8px;}
+  .rm-nav-btn{
+    width:36px; height:36px; border-radius:18px; background:rgba(26,26,36,0.7);
+    border:1px solid var(--border-subtle); color:var(--text-secondary);
+    display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer;
+  }
+  .rm-nav-btn:active{transform:scale(0.92);}
+
+  /* --- Weekday row --- */
+  .rm-weekday-row{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px;}
+  .rm-weekday-row span{text-align:center; font-size:11px; font-weight:700; color:var(--text-tertiary); letter-spacing:0.5px;}
+
+  /* --- Calendar grid --- */
+  .rm-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .rm-cell{
+    aspect-ratio:1; border-radius:14px; background:rgba(26,26,36,0.55);
+    border:1px solid rgba(255,255,255,0.05);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; position:relative; transition:transform .12s ease, border-color .15s ease, background .15s ease;
+  }
+  .rm-cell:active{transform:scale(0.93);}
+  .rm-cell.out-of-month{opacity:0.28;}
+  .rm-cell.is-today{border-color:rgba(124,92,255,0.55); border-width:2px; background:rgba(124,92,255,0.10);}
+  .rm-cell .rm-daynum{font-size:13px; font-weight:600; color:var(--text-secondary);}
+  .rm-cell.is-today .rm-daynum{color:#D7CCFF; font-weight:800;}
+  .rm-dot{width:7px; height:7px; border-radius:4px;}
+  .rm-dot.completed{background:var(--locked); box-shadow:0 0 6px rgba(61,220,132,0.6);}
+  .rm-dot.planned{background:var(--okay); box-shadow:0 0 6px rgba(255,200,87,0.5);}
+  .rm-dot.overdue{background:var(--dead); box-shadow:0 0 6px rgba(255,92,122,0.5);}
+  .rm-dot.published{background:#5FB8FF; box-shadow:0 0 6px rgba(95,184,255,0.55);}
+  .rm-dot.empty{background:rgba(255,255,255,0.14); box-shadow:none;}
+
+  /* --- Legend --- */
+  .rm-legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; padding:14px 16px;}
+  .rm-legend-item{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-tertiary);}
+
+  /* --- Daily dashboard (full screen panel, same pattern as night check-in) --- */
+  #dailyDashboard{
+    position:fixed; inset:0; z-index:90; background:var(--bg); display:none;
+    flex-direction:column; max-width:560px; margin:0 auto;
+  }
+  #dailyDashboard.active{display:flex; animation:slideUp .35s cubic-bezier(.2,.8,.2,1) both;}
+  .dd-scroll{flex:1; overflow-y:auto; padding:20px 20px 60px; -webkit-overflow-scrolling:touch;}
+  .dd-header{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; padding-top:env(safe-area-inset-top,8px);}
+  .dd-date{font-size:22px; font-weight:800; letter-spacing:-0.3px;}
+  .dd-status-label{font-size:13px; font-weight:600; margin-top:4px;}
+  .dd-status-label.completed{color:var(--locked);}
+  .dd-status-label.planned{color:var(--okay);}
+  .dd-status-label.overdue{color:var(--dead);}
+  .dd-status-label.published{color:#5FB8FF;}
+  .dd-status-label.empty{color:var(--text-tertiary);}
+  .dd-section-title{font-size:16px; font-weight:700; margin:26px 0 12px;}
+  .dd-section-title:first-of-type{margin-top:0;}
+
+  /* --- Content row (Stream / Shorts / Long-form toggles) --- */
+  .content-row{display:flex; align-items:center; justify-content:space-between; padding:13px 4px;}
+  .content-row:not(:last-child){border-bottom:1px solid var(--border-subtle);}
+  .content-label{display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600;}
+  .content-status-pill{
+    display:flex; gap:6px;
+  }
+  .cstat-btn{
+    font-size:11px; font-weight:700; padding:7px 11px; border-radius:12px; cursor:pointer;
+    border:1px solid var(--border-subtle); background:rgba(255,255,255,0.04); color:var(--text-tertiary);
+  }
+  .cstat-btn.active-planned{background:rgba(255,200,87,0.16); border-color:rgba(255,200,87,0.4); color:var(--okay);}
+  .cstat-btn.active-published{background:rgba(95,184,255,0.16); border-color:rgba(95,184,255,0.4); color:#5FB8FF;}
+
+  /* --- Goal cards --- */
+  .goal-card{margin-bottom:12px;}
+  .goal-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:10px;}
+  .goal-title{font-size:15px; font-weight:600; flex:1;}
+  .goal-meta{display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;}
+  .priority-chip{font-size:10px; font-weight:800; letter-spacing:0.4px; padding:4px 9px; border-radius:8px; text-transform:uppercase;}
+  .priority-chip.low{background:rgba(95,217,217,0.14); color:var(--skill);}
+  .priority-chip.medium{background:rgba(255,200,87,0.14); color:var(--okay);}
+  .priority-chip.high{background:rgba(255,92,122,0.14); color:var(--dead);}
+  .goal-deadline{font-size:11px; color:var(--text-tertiary);}
+  .goal-del{color:var(--text-tertiary); font-size:16px; cursor:pointer; padding:2px;}
+  .goal-progress-row{display:flex; align-items:center; gap:10px;}
+  .goal-progress-row .slider-track{flex:1;}
+  .goal-pct-label{font-size:12px; color:var(--text-tertiary); min-width:36px; text-align:right;}
+
+  /* --- Reminder cards --- */
+  .reminder-card{margin-bottom:10px;}
+  .reminder-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .reminder-left{display:flex; align-items:center; gap:10px; flex:1;}
+  .reminder-time{font-size:12px; font-weight:700; color:var(--accent-soft); min-width:48px;}
+  .reminder-title{font-size:15px; font-weight:600;}
+  .reminder-repeat{font-size:11px; color:var(--text-tertiary); margin-top:2px;}
+  .toggle{
+    width:42px; height:26px; border-radius:13px; background:rgba(255,255,255,0.1); position:relative; cursor:pointer;
+    border:1px solid var(--border-subtle); flex-shrink:0; transition:background .2s;
+  }
+  .toggle.on{background:rgba(124,92,255,0.55);}
+  .toggle-knob{
+    width:20px; height:20px; border-radius:10px; background:#fff; position:absolute; top:2px; left:2px;
+    transition:left .2s cubic-bezier(.3,.9,.4,1.1); box-shadow:0 1px 4px rgba(0,0,0,0.3);
+  }
+  .toggle.on .toggle-knob{left:19px;}
+
+  /* --- Empty-day prompt --- */
+  .dd-empty-prompt{text-align:center; padding:30px 10px; color:var(--text-tertiary); font-size:14px;}
+
+  /* --- Weekly goals progress bars --- */
+  .wgoal-row{margin-bottom:18px;}
+  .wgoal-row:last-child{margin-bottom:0;}
+  .wgoal-label{display:flex; justify-content:space-between; font-size:14px; font-weight:600; margin-bottom:8px;}
+  .wgoal-label .count{color:var(--text-secondary); font-weight:700; font-size:13px;}
+  .wgoal-track{height:10px; border-radius:5px; background:rgba(255,255,255,0.07); overflow:hidden;}
+  .wgoal-fill{height:100%; border-radius:5px; transition:width .4s cubic-bezier(.2,.8,.2,1);}
+
+  /* --- Monthly goal cards --- */
+  .mgoal-card{margin-bottom:12px;}
+  .mgoal-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .mgoal-title{font-size:15px; font-weight:600;}
+  .mgoal-pct{font-size:13px; font-weight:800; color:var(--accent-soft);}
+
+  /* --- Weekly report card --- */
+  .report-stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;}
+  .report-stat{background:rgba(255,255,255,0.04); border-radius:16px; padding:14px;}
+  .report-stat .num{font-size:24px; font-weight:800; color:var(--text-primary);}
+  .report-stat .lbl{font-size:11px; color:var(--text-tertiary); margin-top:2px; font-weight:600;}
+  .report-highlight{
+    background:rgba(124,92,255,0.10); border:1px solid rgba(124,92,255,0.22); border-radius:16px;
+    padding:14px; margin-top:6px;
+  }
+  .report-highlight .htitle{font-size:11px; font-weight:800; color:var(--accent-soft); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:4px;}
+  .report-highlight .hbody{font-size:14px; line-height:1.45;}
+
+  /* --- Simplify-tomorrow nudge --- */
+  .simplify-card{
+    background:rgba(255,200,87,0.08); border:1px solid rgba(255,200,87,0.25);
+  }
+
+  /* --- Add buttons (goal/reminder) reuse .add-btn already defined above --- */
+  .rm-section-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
 </style>
 </head>
 <body>
@@ -323,6 +468,41 @@
     <div id="projList"></div>
   </div>
 
+  <!-- ============ ROADMAP ============ -->
+  <div class="screen" id="screen-roadmap">
+    <h1 class="title">Roadmap</h1>
+    <p class="subtitle">Your creator command center.</p>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="rm-month-header">
+        <div class="rm-month-title" id="rmMonthTitle"></div>
+        <div class="rm-month-nav">
+          <button class="rm-nav-btn" id="rmPrevBtn">‹</button>
+          <button class="rm-nav-btn" id="rmTodayBtn" style="font-size:11px; width:auto; padding:0 12px;">Today</button>
+          <button class="rm-nav-btn" id="rmNextBtn">›</button>
+        </div>
+      </div>
+      <div class="rm-weekday-row" id="rmWeekdayRow"></div>
+      <div class="rm-grid" id="rmGrid"></div>
+    </div>
+
+    <div class="card rm-legend">
+      <div class="rm-legend-item"><span class="rm-dot completed"></span>Completed</div>
+      <div class="rm-legend-item"><span class="rm-dot planned"></span>Planned</div>
+      <div class="rm-legend-item"><span class="rm-dot overdue"></span>Overdue</div>
+      <div class="rm-legend-item"><span class="rm-dot published"></span>Published</div>
+      <div class="rm-legend-item"><span class="rm-dot empty"></span>Empty</div>
+    </div>
+
+    <p class="section-label">This Week</p>
+    <div class="card" id="weeklyGoalsCard" style="margin-bottom:24px;"></div>
+
+    <p class="section-label">This Month</p>
+    <div id="monthlyGoalsList" style="margin-bottom:24px;"></div>
+
+    <div id="weeklyReportSlot"></div>
+  </div>
+
 </div>
 
 <!-- ============ NIGHT CHECK-IN (modal-style screen) ============ -->
@@ -350,6 +530,36 @@
   </div>
 </div>
 
+<!-- ============ DAILY DASHBOARD (Roadmap day detail) ============ -->
+<div id="dailyDashboard">
+  <div class="dd-scroll">
+    <div class="dd-header">
+      <div>
+        <div class="dd-date" id="ddDate"></div>
+        <div class="dd-status-label" id="ddStatusLabel"></div>
+      </div>
+      <span class="nc-close" id="ddClose">✕</span>
+    </div>
+
+    <div class="dd-section-title">Content</div>
+    <div class="card">
+      <div id="ddContentRows"></div>
+    </div>
+
+    <div class="rm-section-header" style="margin-top:26px;">
+      <div class="dd-section-title" style="margin:0;">Goals</div>
+      <button class="add-btn" id="ddGoalAddBtn" style="width:32px; height:32px; font-size:18px;">+</button>
+    </div>
+    <div id="ddGoalsList"></div>
+
+    <div class="rm-section-header" style="margin-top:26px;">
+      <div class="dd-section-title" style="margin:0;">Reminders</div>
+      <button class="add-btn" id="ddReminderAddBtn" style="width:32px; height:32px; font-size:18px;">+</button>
+    </div>
+    <div id="ddRemindersList"></div>
+  </div>
+</div>
+
 <!-- ============ NEW PROJECT MODAL ============ -->
 <div class="modal-overlay" id="projModal">
   <div class="modal-box">
@@ -364,13 +574,69 @@
   </div>
 </div>
 
+<!-- ============ NEW GOAL MODAL ============ -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal-box">
+    <div class="card glow">
+      <div class="modal-title">New Goal</div>
+      <input class="modal-input" id="goalTitleInput" placeholder="e.g. Finish Intro" />
+
+      <div style="margin-bottom:14px;">
+        <div class="label" style="color:var(--text-secondary); font-size:13px; margin-bottom:8px;">Priority</div>
+        <div class="pill-row" id="goalPriorityRow">
+          <div class="pill" data-priority="low">Low</div>
+          <div class="pill" data-priority="medium">Medium</div>
+          <div class="pill" data-priority="high">High</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="goalCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="goalCreateBtn" disabled>Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NEW REMINDER MODAL ============ -->
+<div class="modal-overlay" id="reminderModal">
+  <div class="modal-box">
+    <div class="card glow">
+      <div class="modal-title">New Reminder</div>
+      <input class="modal-input" id="reminderTitleInput" placeholder="e.g. Record voice-over" />
+      <input class="modal-input" id="reminderTimeInput" type="time" placeholder="Optional time" />
+
+      <div style="margin-bottom:14px;">
+        <div class="label" style="color:var(--text-secondary); font-size:13px; margin-bottom:8px;">Repeat</div>
+        <div class="pill-row" id="reminderRepeatRow">
+          <div class="pill selected" data-repeat="once">Once</div>
+          <div class="pill" data-repeat="daily">Daily</div>
+          <div class="pill" data-repeat="weekly">Weekly</div>
+          <div class="pill" data-repeat="monthly">Monthly</div>
+        </div>
+      </div>
+
+      <div class="reminder-row" style="margin-bottom:18px; padding:4px 0;">
+        <span style="font-size:14px; color:var(--text-secondary);">Notify me</span>
+        <div class="toggle on" id="reminderNotifyToggle"><div class="toggle-knob"></div></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="reminderCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="reminderCreateBtn" disabled>Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- ============ TAB BAR ============ -->
 <div class="tabbar">
   <button class="tab-btn active" data-tab="home"><span class="icon">🏠</span><span class="lbl">Home</span></button>
+  <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="lbl">Roadmap</span></button>
   <button class="tab-btn" data-tab="coach"><span class="icon">💬</span><span class="lbl">Coach</span></button>
-  <button class="tab-btn" data-tab="braindump"><span class="icon">🧠</span><span class="lbl">Brain Dump</span></button>
+  <button class="tab-btn" data-tab="braindump"><span class="icon">🧠</span><span class="lbl">Ideas</span></button>
   <button class="tab-btn" data-tab="projects"><span class="icon">🎬</span><span class="lbl">Projects</span></button>
 </div>
 
@@ -387,7 +653,14 @@
     PROJECTS: 'nm:projects',
     NIGHT_CHECKINS: 'nm:nightCheckins',
     STREAK: 'nm:streak',
-    COACH_CHECKINS: 'nm:coachCheckins'
+    COACH_CHECKINS: 'nm:coachCheckins',
+    // v1.1 — Roadmap
+    GOALS: 'nm:goals',
+    REMINDERS: 'nm:reminders',
+    DAY_RECORDS: 'nm:dayRecords',       // per-date planned/published content + computed status
+    WEEKLY_REPORTS: 'nm:weeklyReports',  // cached Sunday reports, keyed by week-start date
+    NOTIF_PREFS: 'nm:notifPrefs',
+    MISS_TRACKER: 'nm:missTracker'       // tracks consecutive goal misses for "let's simplify" suggestions
   };
 
   function getJSON(key, fallback){
@@ -438,6 +711,59 @@
     return `${Math.floor(hrs/24)}d ago`;
   }
 
+  // --- v1.1 calendar helpers ---
+  function dateKeyOf(y, m, d){
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  function keyToDate(key){
+    const [y,m,d] = key.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  function startOfWeek(date){
+    // week starts Sunday, matches the rest of the app's day-index convention
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0,0,0,0);
+    return d;
+  }
+  function weekKeyFor(dateKey){
+    return toDateKeyFromDate(startOfWeek(keyToDate(dateKey)));
+  }
+  function toDateKeyFromDate(d){
+    return dateKeyOf(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  function isPast(dateKey){
+    return dateKey < todayKey();
+  }
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WEEKDAY_LETTERS = ['S','M','T','W','T','F','S'];
+
+  /** Returns a 6x7 grid of {key, inMonth} cells for the given month/year, Sunday-first. */
+  function buildMonthGrid(year, month){
+    const firstOfMonth = new Date(year, month, 1);
+    const startOffset = firstOfMonth.getDay(); // 0=Sun
+    const gridStart = new Date(year, month, 1 - startOffset);
+    const cells = [];
+    for(let i=0;i<42;i++){
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate()+i);
+      cells.push({
+        key: toDateKeyFromDate(d),
+        day: d.getDate(),
+        inMonth: d.getMonth() === month
+      });
+    }
+    return cells;
+  }
+  function formatLongDate(dateKey){
+    const d = keyToDate(dateKey);
+    return d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  }
+  function formatShortDate(dateKey){
+    const d = keyToDate(dateKey);
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
   // ============================================================
   // STREAK ENGINE  (2-consecutive-day grace period)
   // ============================================================
@@ -479,6 +805,113 @@
     }
     return streak;
   }
+
+  // ============================================================
+  // ROADMAP DATA LAYER (v1.1)
+  // ============================================================
+  // DayRecord shape: { date, content: { stream, shorts, longform } }
+  // each content field: null (not planned) | 'planned' | 'published'
+  function getDayRecords(){ return getJSON(KEYS.DAY_RECORDS, {}); }
+  function saveDayRecords(records){ setJSON(KEYS.DAY_RECORDS, records); }
+  function getDayRecord(dateKey){
+    const records = getDayRecords();
+    return records[dateKey] || { date: dateKey, content: { stream:null, shorts:null, longform:null } };
+  }
+  function saveDayRecord(record){
+    const records = getDayRecords();
+    records[record.date] = record;
+    saveDayRecords(records);
+  }
+  function setContentStatus(dateKey, field, status){
+    // status: null | 'planned' | 'published'
+    const record = getDayRecord(dateKey);
+    record.content = record.content || {};
+    record.content[field] = status;
+    saveDayRecord(record);
+    return record;
+  }
+
+  // Goals: { id, title, progress(0-100), deadline(date key or null), priority('low'|'medium'|'high'), createdAt, completedAt }
+  function getGoals(){ return getJSON(KEYS.GOALS, []); }
+  function saveGoals(goals){ setJSON(KEYS.GOALS, goals); }
+  function upsertGoal(goal){
+    const goals = getGoals();
+    const idx = goals.findIndex(g=>g.id===goal.id);
+    if(idx>=0) goals[idx] = goal; else goals.push(goal);
+    saveGoals(goals);
+    return goals;
+  }
+  function deleteGoal(id){
+    const goals = getGoals().filter(g=>g.id!==id);
+    saveGoals(goals);
+    return goals;
+  }
+  function goalsForDate(dateKey){
+    return getGoals().filter(g => g.deadline === dateKey);
+  }
+
+  // Reminders: { id, title, time(HH:MM or null), notify(bool), repeat('once'|'daily'|'weekly'|'monthly'), date(anchor date key), createdAt }
+  function getReminders(){ return getJSON(KEYS.REMINDERS, []); }
+  function saveReminders(list){ setJSON(KEYS.REMINDERS, list); }
+  function upsertReminder(reminder){
+    const list = getReminders();
+    const idx = list.findIndex(r=>r.id===reminder.id);
+    if(idx>=0) list[idx] = reminder; else list.push(reminder);
+    saveReminders(list);
+    return list;
+  }
+  function deleteReminder(id){
+    const list = getReminders().filter(r=>r.id!==id);
+    saveReminders(list);
+    return list;
+  }
+  /** Does this reminder occur on the given dateKey, accounting for repeat rules? */
+  function reminderOccursOn(reminder, dateKey){
+    if(dateKey < reminder.date) return false; // anchor date is the first occurrence
+    if(reminder.repeat === 'once') return reminder.date === dateKey;
+    const anchor = keyToDate(reminder.date);
+    const target = keyToDate(dateKey);
+    if(reminder.repeat === 'daily') return true;
+    if(reminder.repeat === 'weekly') return anchor.getDay() === target.getDay();
+    if(reminder.repeat === 'monthly') return anchor.getDate() === target.getDate();
+    return false;
+  }
+  function remindersForDate(dateKey){
+    return getReminders().filter(r => reminderOccursOn(r, dateKey));
+  }
+
+  /**
+   * Computes the calendar dot color for a given date:
+   *  green  = a mission was completed that day (Creator Day happened)
+   *  blue   = something was published that day (takes visual priority alongside green)
+   *  yellow = content planned for that day (future or today, nothing completed yet)
+   *  red    = day is in the past, had planned content or goals due, but nothing was completed/published
+   *  gray   = nothing going on that day
+   * A day can technically have multiple true things; priority order below picks one dot,
+   * keeping the calendar glanceable rather than showing multiple dots per cell.
+   */
+  function computeDayStatus(dateKey){
+    const record = getDayRecord(dateKey);
+    const content = record.content || {};
+    const hasPublished = content.stream==='published' || content.shorts==='published' || content.longform==='published';
+    const hasPlanned = content.stream==='planned' || content.shorts==='planned' || content.longform==='planned';
+
+    const history = getDayPlanHistory();
+    const planForDay = history.find(p=>p.date===dateKey) || (dateKey===todayKey() ? dayPlan : null);
+    const missionCompleted = planForDay && planForDay.missions.some(m=>m.status==='completed');
+
+    const goalsToday = goalsForDate(dateKey);
+
+    if(hasPublished) return 'published';
+    if(missionCompleted) return 'completed';
+    if(isPast(dateKey) && (hasPlanned || goalsToday.length>0)) return 'overdue';
+    if(hasPlanned || goalsToday.length>0) return 'planned';
+    return 'empty';
+  }
+
+  // We keep a lightweight in-memory history list of day plans for status computation,
+  // backed by the same KEYS.DAY_PLAN history the home screen already maintains.
+  function getDayPlanHistory(){ return getJSON('nm:dayPlanHistory', []); }
 
   // ============================================================
   // MISSION ENGINE
@@ -582,7 +1015,14 @@
     [/^Brainstorm and outline 1 video concept$/i, 'Jot down 1 rough idea'],
     [/^Brain dump 3 video ideas, no judging them$/i, 'Jot down 1 idea, even a bad one'],
     [/^Write a full outline for your next video$/i, 'Jot down 3 bullet points'],
-    [/^Look at 3 competitor titles for inspiration$/i, 'Look at 1 competitor title']
+    [/^Look at 3 competitor titles for inspiration$/i, 'Look at 1 competitor title'],
+    // bonus tier
+    [/^Queue up 2 more clip ideas$/i, 'Queue up 1 more clip idea'],
+    [/^Schedule the week's Shorts$/i, 'Schedule tomorrow\'s Short'],
+    [/^Write the description \+ tags$/i, 'Write just the title'],
+    [/^Schedule tomorrow's uploads$/i, 'Jot down what to upload tomorrow, schedule later'],
+    [/^Write a mini breakdown of what worked$/i, 'Just note one thing that worked'],
+    [/^Pitch one collab idea to a collaborator$/i, 'Save the collab idea for later']
   ];
 
   function reduceMission(mission){
@@ -637,10 +1077,23 @@
     if(existing && existing.date === todayKey()){
       dayPlan = existing;
     } else {
+      // Not today's plan (or none exists) — archive whatever was there into
+      // history before dropping it, so Roadmap can still see past completions.
+      if(existing) archiveDayPlanToHistory(existing);
       dayPlan = null;
     }
   }
-  function saveDayPlan(){ setJSON(KEYS.DAY_PLAN, dayPlan); }
+  function saveDayPlan(){
+    setJSON(KEYS.DAY_PLAN, dayPlan);
+    if(dayPlan) archiveDayPlanToHistory(dayPlan);
+  }
+  function archiveDayPlanToHistory(plan){
+    const history = getJSON('nm:dayPlanHistory', []);
+    const filtered = history.filter(p=>p.date!==plan.date);
+    filtered.push(plan);
+    // keep last 120 days — plenty for monthly roadmap view, bounded growth
+    setJSON('nm:dayPlanHistory', filtered.slice(-120));
+  }
 
   // ============================================================
   // RENDER: HOME
@@ -963,6 +1416,19 @@
     const el = document.getElementById('coachLines');
     let html = coachLineHtml("Hey — no pressure here. Just checking in on how today's going. 💜");
 
+    if(shouldSuggestSimplify() && dayPlan && !dayPlan.autoSimplified){
+      // Automatically scale down today's still-pending missions once, the
+      // first time the coach tab loads after detecting the pattern — and
+      // say it plainly, without ever framing the prior days as failure.
+      dayPlan.missions = dayPlan.missions.map(m => m.status==='completed' ? m : reduceMission(m));
+      dayPlan.autoSimplified = true;
+      saveDayPlan();
+      html += coachLineHtml("The last couple days have been a lot. Let's simplify tomorrow — I scaled today's missions down too, so there's less pressure. 💜");
+    }
+
+    // Computed AFTER any auto-simplify reduction above, so the question text
+    // (and the freeze-cache below) reflect the actual current mission titles
+    // rather than stale pre-reduction references.
     const activeMissions = dayPlan ? dayPlan.missions.filter(m=>m.status!=='completed') : [];
 
     if(!dayPlan){
@@ -1199,9 +1665,689 @@
   });
 
   // ============================================================
+  // ROADMAP TAB (v1.1)
+  // ============================================================
+  let rmViewYear, rmViewMonth; // currently displayed month in the calendar
+  (function initRmViewDate(){
+    const now = new Date();
+    rmViewYear = now.getFullYear();
+    rmViewMonth = now.getMonth();
+  })();
+  let selectedDashboardDate = null; // dateKey currently open in Daily Dashboard
+
+  function renderRoadmap(){
+    renderCalendar();
+    renderWeeklyGoalsCard();
+    renderMonthlyGoalsList();
+    renderWeeklyReportSlot();
+  }
+
+  function renderCalendar(){
+    document.getElementById('rmMonthTitle').textContent = `${MONTH_NAMES[rmViewMonth]} ${rmViewYear}`;
+
+    const weekdayRow = document.getElementById('rmWeekdayRow');
+    weekdayRow.innerHTML = WEEKDAY_LETTERS.map(l=>`<span>${l}</span>`).join('');
+
+    const grid = document.getElementById('rmGrid');
+    grid.innerHTML = '';
+    const cells = buildMonthGrid(rmViewYear, rmViewMonth);
+    const today = todayKey();
+
+    cells.forEach(cell=>{
+      const status = computeDayStatus(cell.key);
+      const div = document.createElement('div');
+      div.className = 'rm-cell' + (cell.inMonth ? '' : ' out-of-month') + (cell.key===today ? ' is-today' : '');
+      div.innerHTML = `
+        <span class="rm-daynum">${cell.day}</span>
+        <span class="rm-dot ${status}"></span>
+      `;
+      div.addEventListener('click', ()=> openDailyDashboard(cell.key));
+      grid.appendChild(div);
+    });
+  }
+
+  document.getElementById('rmPrevBtn').addEventListener('click', ()=>{
+    buzz(8);
+    rmViewMonth--;
+    if(rmViewMonth<0){ rmViewMonth=11; rmViewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('rmNextBtn').addEventListener('click', ()=>{
+    buzz(8);
+    rmViewMonth++;
+    if(rmViewMonth>11){ rmViewMonth=0; rmViewYear++; }
+    renderCalendar();
+  });
+  document.getElementById('rmTodayBtn').addEventListener('click', ()=>{
+    buzz(8);
+    const now = new Date();
+    rmViewYear = now.getFullYear();
+    rmViewMonth = now.getMonth();
+    renderCalendar();
+  });
+
+  // ---------- Daily Dashboard ----------
+  const STATUS_LABEL = {
+    completed: '🟢 Creator Day completed',
+    planned: '🟡 Content planned',
+    overdue: '🔴 Overdue — nothing completed',
+    published: '🔵 Published',
+    empty: '⚪ Nothing scheduled'
+  };
+  const CONTENT_FIELDS = [
+    {key:'stream', label:'Planned Stream'},
+    {key:'shorts', label:'Planned Shorts'},
+    {key:'longform', label:'Planned Long-form Work'}
+  ];
+
+  function openDailyDashboard(dateKey){
+    selectedDashboardDate = dateKey;
+    renderDailyDashboard();
+    document.getElementById('dailyDashboard').classList.add('active');
+  }
+  function closeDailyDashboard(){
+    document.getElementById('dailyDashboard').classList.remove('active');
+    // refresh everything roadmap-related, since content/goal edits made in
+    // the dashboard affect weekly stats and monthly goal cards too, not just the dot
+    renderRoadmap();
+  }
+  document.getElementById('ddClose').addEventListener('click', closeDailyDashboard);
+
+  function renderDailyDashboard(){
+    const dateKey = selectedDashboardDate;
+    document.getElementById('ddDate').textContent = formatLongDate(dateKey);
+    const status = computeDayStatus(dateKey);
+    const statusEl = document.getElementById('ddStatusLabel');
+    statusEl.textContent = STATUS_LABEL[status];
+    statusEl.className = 'dd-status-label ' + status;
+
+    // Content rows
+    const record = getDayRecord(dateKey);
+    const contentRows = document.getElementById('ddContentRows');
+    contentRows.innerHTML = '';
+    CONTENT_FIELDS.forEach(field=>{
+      const current = (record.content && record.content[field.key]) || null;
+      const row = document.createElement('div');
+      row.className = 'content-row';
+      row.innerHTML = `
+        <span class="content-label">${field.label}</span>
+        <div class="content-status-pill">
+          <span class="cstat-btn ${current==='planned'?'active-planned':''}" data-field="${field.key}" data-set="planned">Planned</span>
+          <span class="cstat-btn ${current==='published'?'active-published':''}" data-field="${field.key}" data-set="published">Published</span>
+        </div>
+      `;
+      contentRows.appendChild(row);
+    });
+    contentRows.querySelectorAll('.cstat-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        buzz(8);
+        const field = btn.dataset.field;
+        const setTo = btn.dataset.set;
+        const rec = getDayRecord(dateKey);
+        const wasActive = rec.content && rec.content[field] === setTo;
+        setContentStatus(dateKey, field, wasActive ? null : setTo); // tap again to clear
+        renderDailyDashboard();
+      });
+    });
+
+    // Goals due this day
+    const goalsList = document.getElementById('ddGoalsList');
+    const goals = goalsForDate(dateKey);
+    if(goals.length===0){
+      goalsList.innerHTML = `<div class="dd-empty-prompt">No goals set for this day yet.</div>`;
+    } else {
+      goalsList.innerHTML = '';
+      goals.forEach(goal=> goalsList.appendChild(buildGoalCard(goal)));
+    }
+
+    // Reminders occurring this day
+    const remindersList = document.getElementById('ddRemindersList');
+    const reminders = remindersForDate(dateKey);
+    if(reminders.length===0){
+      remindersList.innerHTML = `<div class="dd-empty-prompt">No reminders for this day.</div>`;
+    } else {
+      remindersList.innerHTML = '';
+      reminders.forEach(rem=> remindersList.appendChild(buildReminderCard(rem)));
+    }
+  }
+
+  function buildGoalCard(goal){
+    const div = document.createElement('div');
+    div.className = 'goal-card';
+    div.innerHTML = `
+      <div class="card">
+        <div class="goal-top">
+          <div>
+            <div class="goal-title">${escapeHtml(goal.title)}</div>
+            <div class="goal-meta">
+              <span class="priority-chip ${goal.priority}">${goal.priority}</span>
+              ${goal.deadline ? `<span class="goal-deadline">Due ${formatShortDate(goal.deadline)}</span>` : ''}
+            </div>
+          </div>
+          <span class="goal-del" data-id="${goal.id}">✕</span>
+        </div>
+        <div class="goal-progress-row">
+          <div class="slider-track" data-goal-id="${goal.id}">
+            <div class="slider-fill" style="background:${PALETTE[0]}; width:${goal.progress}%;"></div>
+            <div class="slider-thumb" style="left:${goal.progress}%;"></div>
+          </div>
+          <span class="goal-pct-label">${goal.progress}%</span>
+        </div>
+      </div>
+    `;
+    div.querySelector('.goal-del').addEventListener('click', ()=>{
+      buzz(8);
+      deleteGoal(goal.id);
+      renderDailyDashboard();
+    });
+    const track = div.querySelector('.slider-track');
+    attachGenericSlider(track, goal.progress, (pct)=>{
+      const goals = getGoals();
+      const g = goals.find(g=>g.id===goal.id);
+      if(!g) return;
+      g.progress = Math.round(pct);
+      if(g.progress>=100 && !g.completedAt) g.completedAt = new Date().toISOString();
+      if(g.progress<100) g.completedAt = null;
+      upsertGoal(g);
+      const pctLabel = div.querySelector('.goal-pct-label');
+      if(pctLabel) pctLabel.textContent = `${Math.round(pct)}%`;
+    });
+    return div;
+  }
+
+  function buildReminderCard(reminder){
+    const div = document.createElement('div');
+    div.className = 'reminder-card';
+    const repeatLabel = {once:'Once', daily:'Daily', weekly:'Weekly', monthly:'Monthly'}[reminder.repeat];
+    div.innerHTML = `
+      <div class="card">
+        <div class="reminder-row">
+          <div class="reminder-left">
+            ${reminder.time ? `<span class="reminder-time">${reminder.time}</span>` : ''}
+            <div>
+              <div class="reminder-title">${escapeHtml(reminder.title)}</div>
+              <div class="reminder-repeat">${repeatLabel}${reminder.notify ? ' · 🔔' : ''}</div>
+            </div>
+          </div>
+          <span class="goal-del" data-id="${reminder.id}">✕</span>
+        </div>
+      </div>
+    `;
+    div.querySelector('.goal-del').addEventListener('click', ()=>{
+      buzz(8);
+      deleteReminder(reminder.id);
+      renderDailyDashboard();
+    });
+    return div;
+  }
+
+  // Generic slider attachment (mirrors attachSlider but with a caller-supplied commit callback,
+  // reused here for goal progress since goals don't live in KEYS.PROJECTS)
+  function attachGenericSlider(trackEl, initialPct, onCommit){
+    let dragging = false;
+    function setFromClientX(clientX){
+      const rect = trackEl.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      trackEl.querySelector('.slider-fill').style.width = pct + '%';
+      trackEl.querySelector('.slider-thumb').style.left = pct + '%';
+      return pct;
+    }
+    function onDown(e){ dragging=true; trackEl.classList.add('dragging'); setFromClientX(e.touches?e.touches[0].clientX:e.clientX); }
+    function onMove(e){ if(!dragging) return; setFromClientX(e.touches?e.touches[0].clientX:e.clientX); if(e.cancelable) e.preventDefault(); }
+    function onUp(e){
+      if(!dragging) return;
+      dragging=false;
+      trackEl.classList.remove('dragging');
+      const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const pct = setFromClientX(x);
+      buzz(8);
+      onCommit(pct);
+    }
+    trackEl.addEventListener('touchstart', onDown, {passive:true});
+    trackEl.addEventListener('touchmove', onMove, {passive:false});
+    trackEl.addEventListener('touchend', onUp);
+    trackEl.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', (e)=>{ if(dragging) onMove(e); });
+    window.addEventListener('mouseup', onUp);
+  }
+
+  // ---------- New Goal modal ----------
+  const goalModal = document.getElementById('goalModal');
+  const goalTitleInput = document.getElementById('goalTitleInput');
+  const goalCreateBtn = document.getElementById('goalCreateBtn');
+  let selectedGoalPriority = null;
+
+  document.getElementById('ddGoalAddBtn').addEventListener('click', ()=>{
+    goalTitleInput.value = '';
+    selectedGoalPriority = null;
+    document.querySelectorAll('#goalPriorityRow .pill').forEach(p=>p.classList.remove('selected'));
+    goalCreateBtn.disabled = true;
+    goalModal.classList.add('active');
+    setTimeout(()=> goalTitleInput.focus(), 50);
+  });
+  document.getElementById('goalCancelBtn').addEventListener('click', ()=> goalModal.classList.remove('active'));
+  function refreshGoalCreateBtn(){
+    goalCreateBtn.disabled = !(goalTitleInput.value.trim() && selectedGoalPriority);
+  }
+  goalTitleInput.addEventListener('input', refreshGoalCreateBtn);
+  document.querySelectorAll('#goalPriorityRow .pill').forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      buzz(8);
+      selectedGoalPriority = pill.dataset.priority;
+      document.querySelectorAll('#goalPriorityRow .pill').forEach(p=>p.classList.remove('selected'));
+      pill.classList.add('selected');
+      refreshGoalCreateBtn();
+    });
+  });
+  goalCreateBtn.addEventListener('click', ()=>{
+    const title = goalTitleInput.value.trim();
+    if(!title || !selectedGoalPriority) return;
+    buzz(10);
+    const now = new Date().toISOString();
+    upsertGoal({
+      id: `goal_${Date.now()}`,
+      title,
+      progress: 0,
+      deadline: selectedDashboardDate,
+      priority: selectedGoalPriority,
+      createdAt: now,
+      completedAt: null
+    });
+    goalModal.classList.remove('active');
+    renderDailyDashboard();
+  });
+
+  // ---------- New Reminder modal ----------
+  const reminderModal = document.getElementById('reminderModal');
+  const reminderTitleInput = document.getElementById('reminderTitleInput');
+  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  const reminderCreateBtn = document.getElementById('reminderCreateBtn');
+  let selectedRepeat = 'once';
+  let reminderNotifyOn = true;
+
+  document.getElementById('ddReminderAddBtn').addEventListener('click', ()=>{
+    reminderTitleInput.value = '';
+    reminderTimeInput.value = '';
+    selectedRepeat = 'once';
+    reminderNotifyOn = true;
+    document.querySelectorAll('#reminderRepeatRow .pill').forEach(p=>p.classList.toggle('selected', p.dataset.repeat==='once'));
+    document.getElementById('reminderNotifyToggle').classList.add('on');
+    reminderCreateBtn.disabled = true;
+    reminderModal.classList.add('active');
+    setTimeout(()=> reminderTitleInput.focus(), 50);
+  });
+  document.getElementById('reminderCancelBtn').addEventListener('click', ()=> reminderModal.classList.remove('active'));
+  reminderTitleInput.addEventListener('input', ()=>{
+    reminderCreateBtn.disabled = !reminderTitleInput.value.trim();
+  });
+  document.querySelectorAll('#reminderRepeatRow .pill').forEach(pill=>{
+    pill.addEventListener('click', ()=>{
+      buzz(8);
+      selectedRepeat = pill.dataset.repeat;
+      document.querySelectorAll('#reminderRepeatRow .pill').forEach(p=>p.classList.remove('selected'));
+      pill.classList.add('selected');
+    });
+  });
+  document.getElementById('reminderNotifyToggle').addEventListener('click', function(){
+    reminderNotifyOn = !reminderNotifyOn;
+    this.classList.toggle('on', reminderNotifyOn);
+  });
+  reminderCreateBtn.addEventListener('click', ()=>{
+    const title = reminderTitleInput.value.trim();
+    if(!title) return;
+    buzz(10);
+    upsertReminder({
+      id: `rem_${Date.now()}`,
+      title,
+      time: reminderTimeInput.value || null,
+      notify: reminderNotifyOn,
+      repeat: selectedRepeat,
+      date: selectedDashboardDate,
+      createdAt: new Date().toISOString()
+    });
+    reminderModal.classList.remove('active');
+    renderDailyDashboard();
+    scheduleAllReminderNotifications();
+  });
+
+  // ---------- Weekly Goals (This Week progress bars) ----------
+  function datesOfWeekContaining(dateKey){
+    const start = startOfWeek(keyToDate(dateKey));
+    const out = [];
+    for(let i=0;i<7;i++){
+      const d = new Date(start);
+      d.setDate(start.getDate()+i);
+      out.push(toDateKeyFromDate(d));
+    }
+    return out;
+  }
+
+  function computeWeeklyStats(){
+    const weekDates = datesOfWeekContaining(todayKey());
+    let streamsPublished=0, streamsPlanned=0, shortsPublished=0, shortsPlanned=0;
+    weekDates.forEach(dk=>{
+      const rec = getDayRecord(dk);
+      const c = rec.content || {};
+      if(c.stream==='published') streamsPublished++;
+      if(c.stream==='planned' || c.stream==='published') streamsPlanned++;
+      if(c.shorts==='published') shortsPublished++;
+      if(c.shorts==='planned' || c.shorts==='published') shortsPlanned++;
+    });
+    // sensible defaults if nothing was explicitly planned this week, so the
+    // bar isn't a meaningless 0/0 — mirrors typical creator cadence
+    const streamTarget = streamsPlanned || 4;
+    const shortsTarget = shortsPlanned || 7;
+
+    // Long-form: average progress of any goals tagged this week whose title
+    // suggests long-form, falling back to long-form content-published ratio
+    const longformGoals = weekDates.flatMap(dk=>goalsForDate(dk)).filter(g=>/long.?form|edit|episode/i.test(g.title));
+    let longformPct;
+    if(longformGoals.length>0){
+      longformPct = Math.round(longformGoals.reduce((s,g)=>s+g.progress,0) / longformGoals.length);
+    } else {
+      const longformDays = weekDates.filter(dk=>{
+        const c = getDayRecord(dk).content || {};
+        return c.longform === 'planned' || c.longform === 'published';
+      });
+      const longformDone = weekDates.filter(dk=> (getDayRecord(dk).content||{}).longform === 'published');
+      longformPct = longformDays.length>0 ? Math.round((longformDone.length/longformDays.length)*100) : 0;
+    }
+
+    return {
+      streams: {done:streamsPublished, target:streamTarget},
+      shorts: {done:shortsPublished, target:shortsTarget},
+      longformPct
+    };
+  }
+
+  function renderWeeklyGoalsCard(){
+    const stats = computeWeeklyStats();
+    const card = document.getElementById('weeklyGoalsCard');
+    function bar(label, done, target, color){
+      const pct = target>0 ? Math.min(100, Math.round((done/target)*100)) : 0;
+      return `
+        <div class="wgoal-row">
+          <div class="wgoal-label"><span>${label}</span><span class="count">${done} / ${target}</span></div>
+          <div class="wgoal-track"><div class="wgoal-fill" style="width:${pct}%; background:${color};"></div></div>
+        </div>`;
+    }
+    function pctBar(label, pct, color){
+      return `
+        <div class="wgoal-row">
+          <div class="wgoal-label"><span>${label}</span><span class="count">${pct}%</span></div>
+          <div class="wgoal-track"><div class="wgoal-fill" style="width:${pct}%; background:${color};"></div></div>
+        </div>`;
+    }
+    card.innerHTML =
+      bar('Streams', stats.streams.done, stats.streams.target, '#7C5CFF') +
+      bar('Shorts', stats.shorts.done, stats.shorts.target, '#5FD9D9') +
+      pctBar('Long-form', stats.longformPct, '#FFC857');
+  }
+
+  // ---------- Monthly Goals ----------
+  // Monthly goals are just goals whose deadline falls within the current
+  // calendar month and have no specific day-driven content link — rendered
+  // as standalone progress cards rather than tied to one calendar day.
+  function getMonthlyGoals(){
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    return getGoals().filter(g=>{
+      if(!g.deadline) return false;
+      const d = keyToDate(g.deadline);
+      return d.getFullYear()===y && d.getMonth()===m;
+    });
+  }
+
+  function renderMonthlyGoalsList(){
+    const list = document.getElementById('monthlyGoalsList');
+    const goals = getMonthlyGoals();
+    if(goals.length===0){
+      list.innerHTML = `<div class="card"><div class="dd-empty-prompt" style="padding:18px 4px;">No monthly goals yet — add a goal to any day this month from its dashboard, like "Reach 500 followers" or "Finish Copper to Champ Episode."</div></div>`;
+      return;
+    }
+    list.innerHTML = '';
+    goals.sort((a,b)=> b.progress - a.progress);
+    goals.forEach((goal, i)=>{
+      const div = document.createElement('div');
+      div.className = 'mgoal-card';
+      div.innerHTML = `
+        <div class="card">
+          <div class="mgoal-top">
+            <span class="mgoal-title">${escapeHtml(goal.title)}</span>
+            <span class="mgoal-pct">${goal.progress}%</span>
+          </div>
+          <div class="wgoal-track"><div class="wgoal-fill" style="width:${goal.progress}%; background:${PALETTE[i%PALETTE.length]};"></div></div>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  // ---------- Smart Goal Suggestions (miss tracking) ----------
+  // Tracks consecutive days where planned content existed but nothing was
+  // completed/published, so we can gently suggest simplifying rather than
+  // ever framing it as failure.
+  function getMissTracker(){ return getJSON(KEYS.MISS_TRACKER, {consecutiveMisses:0, lastCheckedDate:null}); }
+  function saveMissTracker(t){ setJSON(KEYS.MISS_TRACKER, t); }
+
+  function updateMissTrackerForYesterday(){
+    // Recompute by scanning backward from yesterday so this is correct even
+    // if the app was closed for a few days (incremental daily ticks would
+    // miss days that passed while the app wasn't open at all).
+    let misses = 0;
+    for(let i=1;i<=14;i++){
+      const d = new Date(Date.now() - i*86400000);
+      const dk = toDateKeyFromDate(d);
+      const status = computeDayStatus(dk);
+      if(status === 'overdue'){ misses++; }
+      else { break; } // streak of misses is only "consecutive" — stop at first non-miss
+    }
+    const updated = {consecutiveMisses: misses, lastCheckedDate: toDateKeyFromDate(new Date(Date.now()-86400000))};
+    saveMissTracker(updated);
+    return updated;
+  }
+
+  function shouldSuggestSimplify(){
+    const tracker = updateMissTrackerForYesterday();
+    return tracker.consecutiveMisses >= 2;
+  }
+
+  // ---------- Weekly Creator Report (generated every Sunday) ----------
+  function computeWeeklyReport(weekStartKey){
+    const weekDates = datesOfWeekContaining(weekStartKey);
+    const history = getDayPlanHistory();
+
+    let creatorDays=0, streams=0, shorts=0, longformDays=0, ideasSaved=0;
+    let bestDay = null, bestDayMissionCount = 0;
+
+    weekDates.forEach(dk=>{
+      const plan = history.find(p=>p.date===dk) || (dk===todayKey() ? dayPlan : null);
+      const completedCount = plan ? plan.missions.filter(m=>m.status==='completed').length : 0;
+      if(completedCount>0) creatorDays++;
+      if(completedCount>bestDayMissionCount){ bestDayMissionCount = completedCount; bestDay = dk; }
+
+      const rec = getDayRecord(dk);
+      const c = rec.content || {};
+      if(c.stream==='published') streams++;
+      if(c.shorts==='published') shorts++;
+      if(c.longform==='published') longformDays++;
+    });
+
+    const brainDump = getJSON(KEYS.BRAIN_DUMP, []);
+    ideasSaved = brainDump.filter(e=>{
+      const created = toDateKeyFromDate(new Date(e.createdAt));
+      return weekDates.includes(created);
+    }).length;
+
+    let biggestAchievement;
+    if(creatorDays>=5) biggestAchievement = `You showed up ${creatorDays} days this week — that's real consistency.`;
+    else if(streams>0 && shorts>0) biggestAchievement = `You balanced streaming and Shorts this week without burning out.`;
+    else if(creatorDays>0) biggestAchievement = `You kept the streak alive even on a lighter week.`;
+    else biggestAchievement = `You showed up here to plan, even if execution lagged — that's still showing up.`;
+
+    let recommendedFocus;
+    if(creatorDays===0) recommendedFocus = `Pick one tiny mission for Monday — momentum matters more than size right now.`;
+    else if(longformDays===0 && shorts>0) recommendedFocus = `Shorts are flowing — maybe carve 30 minutes for long-form next week.`;
+    else if(shorts===0 && streams>0) recommendedFocus = `Streaming's solid — a couple quick Shorts could extend that reach.`;
+    else recommendedFocus = `Keep the same rhythm next week. It's working.`;
+
+    return {
+      weekStart: weekStartKey,
+      creatorDays, streams, shorts,
+      longformHours: longformDays, // tracked as days-with-published-longform; framed as hours in UI per spec
+      ideasSaved,
+      mostProductiveDay: bestDay ? formatShortDate(bestDay) : '—',
+      biggestAchievement,
+      recommendedFocus,
+      generatedAt: new Date().toISOString()
+    };
+  }
+
+  function getOrGenerateWeeklyReport(){
+    // Only meaningful once a week has actually passed — generate for the
+    // most recently completed Sunday-to-Saturday week.
+    const today = new Date();
+    const isSunday = today.getDay() === 0;
+    const lastWeekEnd = new Date(today);
+    if(!isSunday || today.getHours() < 18){
+      // show the most recently completed full week (last week) until Sunday evening
+      lastWeekEnd.setDate(today.getDate() - today.getDay() - 1);
+    }
+    const lastWeekStartKey = toDateKeyFromDate(startOfWeek(lastWeekEnd));
+
+    const reports = getJSON(KEYS.WEEKLY_REPORTS, {});
+    if(reports[lastWeekStartKey]) return reports[lastWeekStartKey];
+
+    const report = computeWeeklyReport(lastWeekStartKey);
+    reports[lastWeekStartKey] = report;
+    setJSON(KEYS.WEEKLY_REPORTS, reports);
+    return report;
+  }
+
+  function renderWeeklyReportSlot(){
+    const slot = document.getElementById('weeklyReportSlot');
+    const today = new Date();
+
+    let html = '';
+
+    if(shouldSuggestSimplify()){
+      html += `
+        <div class="card simplify-card" style="margin-bottom:20px;">
+          <div style="font-weight:700; margin-bottom:4px;">Let's simplify tomorrow 💜</div>
+          <div style="color:var(--text-secondary); font-size:14px; line-height:1.45;">
+            The last couple days have been heavier than planned. That's normal — tomorrow's mission will scale down automatically when you open the Coach tab.
+          </div>
+        </div>`;
+    }
+
+    const report = getOrGenerateWeeklyReport();
+    html += `
+      <p class="section-label">Weekly Creator Report</p>
+      <div class="card">
+        <div style="font-size:13px; color:var(--text-tertiary); margin-bottom:2px;">Week of ${formatShortDate(report.weekStart)}</div>
+        <div class="report-stat-grid">
+          <div class="report-stat"><div class="num">${report.creatorDays}</div><div class="lbl">Creator Days</div></div>
+          <div class="report-stat"><div class="num">${report.streams}</div><div class="lbl">Streams completed</div></div>
+          <div class="report-stat"><div class="num">${report.shorts}</div><div class="lbl">Shorts created</div></div>
+          <div class="report-stat"><div class="num">${report.longformHours}</div><div class="lbl">Long-form hours</div></div>
+          <div class="report-stat"><div class="num">${report.ideasSaved}</div><div class="lbl">Ideas saved</div></div>
+          <div class="report-stat"><div class="num">${report.mostProductiveDay}</div><div class="lbl">Most productive day</div></div>
+        </div>
+        <div class="report-highlight">
+          <div class="htitle">Biggest achievement</div>
+          <div class="hbody">${escapeHtml(report.biggestAchievement)}</div>
+        </div>
+        <div class="report-highlight" style="margin-top:10px;">
+          <div class="htitle">Recommended focus</div>
+          <div class="hbody">${escapeHtml(report.recommendedFocus)}</div>
+        </div>
+      </div>`;
+
+    slot.innerHTML = html;
+  }
+
+  // ---------- Smart Notifications ----------
+  // Uses the Notifications API where available (requires user permission,
+  // and Android Chrome only delivers these reliably while the PWA/tab is
+  // open or recently backgrounded — there is no true OS-level background
+  // scheduling without a push server, which v1.1 intentionally doesn't add).
+  function notificationsSupported(){
+    return 'Notification' in window;
+  }
+  function notificationPermission(){
+    return notificationsSupported() ? Notification.permission : 'unsupported';
+  }
+  async function requestNotificationPermission(){
+    if(!notificationsSupported()) return 'unsupported';
+    try{ return await Notification.requestPermission(); }
+    catch(e){ return 'denied'; }
+  }
+  function fireLocalNotification(title, body){
+    if(!notificationsSupported() || Notification.permission!=='granted') return;
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.controller){
+        navigator.serviceWorker.ready.then(reg=> reg.showNotification(title, {body, icon:'./icon-192.png', badge:'./icon-192.png'}));
+      } else {
+        new Notification(title, {body, icon:'./icon-192.png'});
+      }
+    }catch(e){ /* notification delivery best-effort only */ }
+  }
+
+  const COACH_MESSAGES = {
+    morning: "Good morning 👋 Ready for today's next move?",
+    afternoon: "Quick check-in. How's today's mission going?",
+    evening: "Before you sleep... what are you proud of today?"
+  };
+
+  function maybeFireTimeBasedNotification(){
+    const hour = new Date().getHours();
+    const today = todayKey();
+    const prefs = getJSON(KEYS.NOTIF_PREFS, {});
+    const firedToday = prefs[today] || {};
+
+    if(hour>=7 && hour<11 && !firedToday.morning){
+      fireLocalNotification('Next Move', COACH_MESSAGES.morning);
+      firedToday.morning = true;
+    } else if(hour>=13 && hour<17 && !firedToday.afternoon){
+      fireLocalNotification('Next Move', COACH_MESSAGES.afternoon);
+      firedToday.afternoon = true;
+    } else if(hour>=20 && hour<23 && !firedToday.evening){
+      const checkin = getJSON(KEYS.NIGHT_CHECKINS, []).find(e=>e.date===today);
+      const msg = checkin ? COACH_MESSAGES.evening : "You've made it through another day. Let's reflect for one minute.";
+      fireLocalNotification('Next Move', msg);
+      firedToday.evening = true;
+    }
+    prefs[today] = firedToday;
+    setJSON(KEYS.NOTIF_PREFS, prefs);
+  }
+
+  function scheduleAllReminderNotifications(){
+    // Best-effort: checks reminders due "soon" against the current time.
+    // Without a push server, this only fires while the app is open/foregrounded,
+    // checked on an interval — see the setInterval call at the bottom of init.
+    if(notificationPermission()!=='granted') return;
+    const now = new Date();
+    const nowKey = todayKey();
+    const reminders = getReminders().filter(r=>r.notify && reminderOccursOn(r, nowKey));
+    reminders.forEach(r=>{
+      if(!r.time) return;
+      const [hh,mm] = r.time.split(':').map(Number);
+      const due = new Date(now); due.setHours(hh, mm, 0, 0);
+      const diffMin = (due - now) / 60000;
+      const prefs = getJSON(KEYS.NOTIF_PREFS, {});
+      const key = `rem_${r.id}_${nowKey}`;
+      if(diffMin>=0 && diffMin<=1 && !prefs[key]){
+        fireLocalNotification('Reminder', r.title);
+        prefs[key] = true;
+        setJSON(KEYS.NOTIF_PREFS, prefs);
+      }
+    });
+  }
+
+  // ============================================================
   // TAB NAVIGATION
   // ============================================================
-  const SCREENS = ['home','coach','braindump','projects'];
+  const SCREENS = ['home','coach','braindump','projects','roadmap'];
   function switchTab(tab){
     SCREENS.forEach(s=>{
       document.getElementById('screen-'+s).classList.toggle('active', s===tab);
@@ -1213,6 +2359,7 @@
     if(tab==='braindump') renderBrainDump();
     if(tab==='projects') renderProjects();
     if(tab==='home') renderHome();
+    if(tab==='roadmap') renderRoadmap();
   }
   document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
@@ -1223,6 +2370,26 @@
   // ============================================================
   loadDayPlan();
   renderHome();
+
+  // Best-effort notification setup. Browsers require this to be triggered
+  // close to a user gesture in many cases — here we ask once, quietly, and
+  // never re-prompt if denied (no nagging).
+  if(notificationsSupported() && Notification.permission === 'default'){
+    // Defer slightly so it doesn't compete with the initial paint, and only
+    // ask after the person has had a moment to actually see the app.
+    setTimeout(()=>{ requestNotificationPermission(); }, 4000);
+  }
+
+  // Check time-based coach notifications + due reminders every 60s while the
+  // app is open. This is intentionally lightweight — true background delivery
+  // would need a push server, which is out of scope for a local-only v1.1.
+  setInterval(()=>{
+    maybeFireTimeBasedNotification();
+    scheduleAllReminderNotifications();
+  }, 60000);
+  // also run once immediately on load, in case the relevant window is already active
+  maybeFireTimeBasedNotification();
+  scheduleAllReminderNotifications();
 
 })();
 </script>
